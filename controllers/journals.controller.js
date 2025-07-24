@@ -9,7 +9,7 @@ export const createJournal = async (req, res) => {
         console.log("Authenticated user ID:", userId);
         res.send("Journal creation endpoint hit");
         const { title = "title", content = "content" } = req.body;
-        const newJournal = new Journal({ title, content, userId });
+        const newJournal = new Journal({ title, content, clerkId: userId });
         await newJournal.save();
         await User.findByIdAndUpdate(userId, { $push: { journalIds: newJournal._id } });
 
