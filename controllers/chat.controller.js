@@ -14,10 +14,15 @@ export const createChat = async (req, res) => {
 
 export const getChatById = async (req, res) => {
     try {
+        console.log("Fetching chat by ID");
+        const userId = req.user.userId;
         const { id } = req.params;
         const chat = await Chat.findById(id);
         if (!chat) {
             return res.status(404).json({ message: "Chat not found" });
+        }
+        if (chat.userId !== userId) {
+            return res.status(403).json({ message: "Access denied" });
         }
         res.status(200).json(chat);
     } catch (error) {
@@ -27,7 +32,9 @@ export const getChatById = async (req, res) => {
 
 export const getChatHistory = async (req, res) => {
     try {
+        console.log("Fetching chat history");
         const userId = req.user.userId;
+        console.log("User ID:", userId);
         const { limit = 10, page = 1 } = req.query;
         const skip = (page - 1) * limit;
         const chats = await Chat.find({ userId }).sort({ createdAt: -1 }).skip(skip).limit(limit);
