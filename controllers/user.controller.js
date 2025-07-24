@@ -1,4 +1,4 @@
-import User from "../models/user.model";
+import User from "../models/user.model.js";
 import { getAuth, clerkClient } from "@clerk/express";
 
 export const syncUser = async (req, res, next) => {

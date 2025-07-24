@@ -18,3 +18,12 @@ export const createJournal = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 }
+
+export const getJournals = async (req, res) => {
+    try {
+        const journals = await Journal.find();
+        res.status(200).json(journals);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+}
