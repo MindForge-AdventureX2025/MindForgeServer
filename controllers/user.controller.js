@@ -17,6 +17,15 @@ export const syncUser = async (req, res, next) => {
         const { firstName, lastName, imageUrl, username } = clerkUser;
         const email = clerkUser.emailAddresses[0]?.emailAddress;
 
+        console.log({
+            firstName,
+            lastName,
+            username,
+            email,
+            userId,
+            imageUrl,
+        })
+
         // Create new user
         user = new User({
             firstName: firstName || '',
