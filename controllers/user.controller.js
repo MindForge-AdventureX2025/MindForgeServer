@@ -8,6 +8,10 @@ export const syncUser = async (req, res, next) => {
         // Check if user already exists
         let user = await User.findOne({ clerkId: userId });
         if (user) {
+            req.user = {
+                ...user.toObject(),
+                userId: user._id.toString()
+            };
             return next(); // User exists, proceed to next middleware
         }
 
@@ -37,7 +41,7 @@ export const syncUser = async (req, res, next) => {
         });
         await user.save();
         req.user = {
-            ...user,
+            ...user.toObject(),
             userId: user._id.toString()
         }
         return next(); // Proceed to next middleware
