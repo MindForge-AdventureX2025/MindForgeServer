@@ -140,3 +140,16 @@ export const removeTags = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 }
+
+export const getJournalVersions = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const versions = await Version.find({ journalId: id }).sort({ createdAt: -1 });
+        if (!versions || versions.length === 0) {
+            return res.status(404).json({ message: "No versions found for this journal" });
+        }
+        res.status(200).json(versions);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+}
