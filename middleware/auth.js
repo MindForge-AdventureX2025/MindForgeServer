@@ -16,19 +16,8 @@ export const syncUser = async (req, res, next) => {
         }
 
         const clerkUser = await clerkClient.users.getUser(userId);
-        console.log("Clerk user data:", clerkUser);
-        console.log(clerkUser.emailAddresses[0]);
         const { firstName, lastName, imageUrl, username } = clerkUser;
         const email = clerkUser.emailAddresses[0]?.emailAddress;
-
-        console.log({
-            firstName,
-            lastName,
-            username,
-            email,
-            userId,
-            imageUrl,
-        })
 
         // Create new user
         user = new User({

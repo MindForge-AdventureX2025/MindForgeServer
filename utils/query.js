@@ -19,6 +19,8 @@ export const query = async (message) => {
                 role: "user",
                 content: message
             }
-        ]
+        ],
+        stream: true,
+        background: true,
     });
 };
