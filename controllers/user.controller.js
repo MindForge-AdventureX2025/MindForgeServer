@@ -5,6 +5,7 @@ export const syncUser = async (req, res, next) => {
     try {
         const { userId } = getAuth(req);
         const clerkUser = await clerkClient.users.getUser(userId);
+        console.log("Clerk user data:", clerkUser);
         const { firstname, lastname, email } = clerkUser;
 
         // Check if user already exists
