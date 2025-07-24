@@ -42,7 +42,7 @@ const userSchema = new mongoose.Schema({
     insight:{
         type: String,
         required: false,
-    },
+    }, 
 },
 {
     timestamps: true,
