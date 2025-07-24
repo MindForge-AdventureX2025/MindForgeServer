@@ -28,7 +28,9 @@ export const getChatById = async (req, res) => {
 export const getChatHistory = async (req, res) => {
     try {
         const userId = req.user.userId;
-        const chats = await Chat.find({ userId });
+        const { limit = 10, page = 1 } = req.query;
+        const skip = (page - 1) * limit;
+        const chats = await Chat.find({ userId }).sort({ createdAt: -1 }).skip(skip).limit(limit);
         res.status(200).json(chats);
     } catch (error) {
         res.status(500).json({ message: error.message });
