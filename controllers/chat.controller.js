@@ -2,7 +2,7 @@ import Chat from "../models/chat.model.js";
 
 export const createChat = async (req, res) => {
     try {
-        const { userId } = req.user.userId;
+        const { userId } = req.user;
         const newChat = new Chat({ userId });
         await newChat.save();
         res.status(201).json(newChat);
@@ -26,7 +26,7 @@ export const getChatById = async (req, res) => {
 
 export const getChatHistory = async (req, res) => {
     try {
-        const { userId } = req.query;
+        const { userId } = req.user;
         const chats = await Chat.find({ userId });
         res.status(200).json(chats);
     } catch (error) {
