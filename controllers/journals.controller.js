@@ -3,9 +3,11 @@ import Journal from "../models/journal.model.js";
 
 export const createJournal = async (req, res) => {
     try {
+        console.log("Creating journal for user:", req.user);
         const userId = req.user.userId;
         const { title = "title", content = "content" } = req.body;
         const newJournal = new Journal({ title, content, clerkId: req.user.clerkId });
+        console.log("New journal data:", newJournal);
         await newJournal.save();
         await User.findByIdAndUpdate(userId, { $push: { journalIds: newJournal._id } });
 
