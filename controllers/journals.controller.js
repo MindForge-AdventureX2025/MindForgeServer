@@ -79,16 +79,30 @@ export const deleteJournal = async (req, res) => {
 
 export const searchJournals = async (req, res) => {
     try {
-        const { query } = req.query;
+        const { keyword, tags = '', from, to } = req.query;
+        if(!from) {
+            from = new Date(0); // Default to the beginning of time if no 'from' date is provided
+        }
+        if(!to) {
+            to = new Date(); // Default to the current date if no 'to' date is provided
+        }
         const journals = await Journal.find({
             $and: [
-                {$or: [
-                    { title: new RegExp(query, 'i') },
-                    { content: new RegExp(query, 'i') }
+                { $or: [
+                    { title: new RegExp(keyword, 'i') },
+                    { content: new RegExp(keyword, 'i') }
                 ]},
-                {userId: req.user.userId} // Ensure the search is scoped to the current user
+                { userId: req.user.userId }, // Ensure the search is scoped to the current user
+                { updatedAt: { $gte: from, $lte: to } }, // Filter by date range
+                { tags: { $in: tags ? tags.split(',') : [] } } // Filter by tags if provided
             ]
-        });
+        }).
+        sort({ updatedAt: -1 }). // Sort by most recent updates;
+        populate('userId', 'firstName lastName username avatarUrl').
+        execPopulate();
+        if (journals.length === 0) {
+            return res.status(404).json({ message: "No journals found" });
+        }
         res.status(200).json(journals);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -110,6 +124,7 @@ export const addTags = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 }
+
 export const removeTags = async (req, res) => {
     try {
         const { id } = req.params;
