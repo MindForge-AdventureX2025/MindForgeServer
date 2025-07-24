@@ -9,10 +9,17 @@ const journalSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    clerkId: {
-        type: String,
+    userId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
         required: true,
     },
+    tags: [
+        {
+            type: String,
+            required: false,
+        }
+    ]
 }, {
     timestamps: true,
 });

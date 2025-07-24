@@ -1,12 +1,19 @@
 import User from "../models/user.model.js";
 import Journal from "../models/journal.model.js";
+import Version from "../models/version.model.js";
 
 export const createJournal = async (req, res) => {
     try {
         const userId = req.user.userId;
-        const { title = "title", content = "content" } = req.body;
-        const newJournal = new Journal({ title, content, clerkId: req.user.clerkId });
+        const { title = "untitled", content = "" } = req.body;
+        const newJournal = new Journal({ title, content, userId });
         await newJournal.save();
+        const version = new Version({
+            journalId: newJournal._id,
+            userId,
+            content: content,
+        });
+        await version.save();
         await User.findByIdAndUpdate(userId, { $push: { journalIds: newJournal._id } });
 
         res.status(201).json(newJournal);
@@ -45,6 +52,12 @@ export const updateJournal = async (req, res) => {
         if (!updatedJournal) {
             return res.status(404).json({ message: "Journal not found" });
         }
+        const version = new Version({
+            journalId: updatedJournal._id,
+            userId: req.user.userId,
+            content: content,
+        });
+        await version.save();
         res.status(200).json(updatedJournal);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -68,9 +81,12 @@ export const searchJournals = async (req, res) => {
     try {
         const { query } = req.query;
         const journals = await Journal.find({
-            $or: [
-                { title: new RegExp(query, 'i') },
-                { content: new RegExp(query, 'i') }
+            $and: [
+                {$or: [
+                    { title: new RegExp(query, 'i') },
+                    { content: new RegExp(query, 'i') }
+                ]},
+                {userId: req.user.userId} // Ensure the search is scoped to the current user
             ]
         });
         res.status(200).json(journals);
