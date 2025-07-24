@@ -7,9 +7,8 @@ import { clerkMiddleware } from '@clerk/express';
 
 dotenv.config();
 import helmet from 'helmet';
-import { connect } from 'http2';
 import connectDB from './database/db.js';
-import { syncUser } from './controllers/user.controller.js';
+import { syncUser } from './middleware/auth.js';
 const app = express();
 
 app.use(cors(

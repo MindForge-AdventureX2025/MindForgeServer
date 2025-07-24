@@ -40,7 +40,7 @@ export const getChatHistory = async (req, res) => {
 export const updateChat = async (req, res) => {
     try {
         const { id } = req.params;
-        const { message, selected = '' } = req.body;
+        const { message, selected = '', journalIds = [] } = req.body;
         let originalChat = await Chat.findById(id);
         originalChat.messages.push({
             sender: 'user',
@@ -61,6 +61,8 @@ export const updateChat = async (req, res) => {
             content: response,
             timestamp: new Date()
         });
+        let ids = originalChat.messages[originalChat.messages.length - 1].journalId.filter(item => !journalIds.includes(item));
+        originalChat.messages[originalChat.messages.length - 1].journalId = [...ids, ...journalIds];
         await originalChat.save();
         if (!originalChat) {
             return res.status(404).json({ message: "Chat not found" });

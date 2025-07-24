@@ -22,10 +22,10 @@ const chatSchema = new mongoose.Schema({
                 type: String,
                 required: true,
             },
-            journalId: {
+            journalId: [{
                 type: mongoose.Schema.Types.ObjectId,
                 ref: 'Journal',
-            },
+            }],
             timestamp: {
                 type: Date,
                 default: Date.now,
