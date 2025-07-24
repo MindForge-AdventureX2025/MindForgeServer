@@ -1,5 +1,5 @@
 import express from "express";
-import { createJournal } from "../controllers/journals.controller";
+import { createJournal } from "../controllers/journals.controller.js";
 
 const router = express.Router();
 
