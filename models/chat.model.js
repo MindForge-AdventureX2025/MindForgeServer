@@ -7,6 +7,10 @@ const chatSchema = new mongoose.Schema({
         ref: 'User',
         required: true,
     },
+    title: {
+        type: String,
+        default: "New Chat",
+    },
     messages: {
         type: [{
             sender: {
