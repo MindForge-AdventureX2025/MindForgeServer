@@ -15,10 +15,12 @@ export const createJournal = async (req, res) => {
         });
         await version.save();
         await User.findByIdAndUpdate(userId, { $push: { journalIds: newJournal._id } });
+        newJournal.createdAt = new Date(newJournal.createdAt).getTime();
+        newJournal.updatedAt = new Date().getTime();
         newJournal = {
             ...newJournal.toObject(),
-            createdAt: createdAt.getTime(),
-            updatedAt: new Date().getTime(),
+            createdAt: newJournal.createdAt,
+            updatedAt: newJournal.updatedAt,
         }
         res.status(201).json(newJournal);
     } catch (error) {
@@ -33,7 +35,9 @@ export const getJournals = async (req, res) => {
         const skip = (page - 1) * limit;
         const journals = await Journal.find({ userId }).sort({ updatedAt: -1 }).skip(skip).limit(limit);
         journals.forEach(journal => {
+            journal.createdAt = new Date(journal.createdAt);
             journal.createdAt = journal.createdAt.getTime();
+            journal.updatedAt = new Date(journal.updatedAt);
             journal.updatedAt = journal.updatedAt.getTime();
         });
         res.status(200).json(journals);
@@ -49,10 +53,15 @@ export const getJournalById = async (req, res) => {
         if (!journal) {
             return res.status(404).json({ message: "Journal not found" });
         }
+        if (journal.userId.toString() !== req.user.userId) {
+            return res.status(403).json({ message: "Access denied" });
+        }
+        journal.createdAt = new Date(journal.createdAt).getTime();
+        journal.updatedAt = new Date(journal.updatedAt).getTime();
         res.status(200).json({
             ...journal.toObject(),
-            createdAt: journal.createdAt.getTime(),
-            updatedAt: journal.updatedAt.getTime(),
+            createdAt: journal.createdAt,
+            updatedAt: journal.updatedAt,
         });
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -73,8 +82,8 @@ export const updateJournal = async (req, res) => {
             content: content,
         });
         await version.save();
-        updatedJournal.createdAt = updatedJournal.createdAt.getTime();
-        updatedJournal.updatedAt = updatedJournal.updatedAt.getTime();
+        updatedJournal.createdAt = new Date(updatedJournal.createdAt).getTime();
+        updatedJournal.updatedAt = new Date(updatedJournal.updatedAt).getTime();
         res.status(200).json(updatedJournal);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -123,8 +132,8 @@ export const searchJournals = async (req, res) => {
             return res.status(404).json({ message: "No journals found" });
         }
         journals.forEach(journal => {
-            journal.createdAt = journal.createdAt.getTime();
-            journal.updatedAt = journal.updatedAt.getTime();
+            journal.createdAt = new Date(journal.createdAt).getTime();
+            journal.updatedAt = new Date(journal.updatedAt).getTime();
         });
         res.status(200).json(journals);
     } catch (error) {
@@ -149,8 +158,8 @@ export const addTags = async (req, res) => {
             tags: journal.tags,
         });
         await version.save();
-        journal.createdAt = journal.createdAt.getTime();
-        journal.updatedAt = journal.updatedAt.getTime();
+        journal.createdAt = new Date(journal.createdAt).getTime();
+        journal.updatedAt = new Date(journal.updatedAt).getTime();
         res.status(200).json({
             ...journal.toObject(),
             createdAt: journal.createdAt,
@@ -178,8 +187,8 @@ export const removeTags = async (req, res) => {
             tags: journal.tags,
         });
         await version.save();
-        journal.createdAt = journal.createdAt.getTime();
-        journal.updatedAt = journal.updatedAt.getTime();
+        journal.createdAt = new Date(journal.createdAt).getTime();
+        journal.updatedAt = new Date(journal.updatedAt).getTime();
         res.status(200).json({
             ...journal.toObject(),
             createdAt: journal.createdAt,
@@ -200,8 +209,8 @@ export const getJournalVersions = async (req, res) => {
             return res.status(404).json({ message: "No versions found for this journal" });
         }
         versions.forEach(version => {
-            version.createdAt = version.createdAt.getTime();
-            version.updatedAt = version.updatedAt.getTime();
+            version.createdAt = new Date(version.createdAt).getTime();
+            version.updatedAt = new Date(version.updatedAt).getTime();
         });
         res.status(200).json(versions);
     } catch (error) {
