@@ -19,7 +19,11 @@ const journalSchema = new mongoose.Schema({
             type: String,
             required: false,
         }
-    ]
+    ],
+    audioIds: [{
+        type: String,
+        required: false,
+    }]
 }, {
     timestamps: true,
 });
