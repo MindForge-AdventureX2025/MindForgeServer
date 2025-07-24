@@ -94,3 +94,34 @@ export const searchJournals = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 }
+
+export const addTags = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { tags } = req.body;
+        const journal = await Journal.findById(id);
+        if (!journal) {
+            return res.status(404).json({ message: "Journal not found" });
+        }
+        journal.tags.push(...tags);
+        await journal.save();
+        res.status(200).json(journal);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+}
+export const removeTags = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { tags } = req.body;
+        const journal = await Journal.findById(id);
+        if (!journal) {
+            return res.status(404).json({ message: "Journal not found" });
+        }
+        journal.tags = journal.tags.filter(tag => !tags.includes(tag));
+        await journal.save();
+        res.status(200).json(journal);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+}
