@@ -38,7 +38,7 @@ export const getChatHistory = async (req, res) => {
 export const updateChat = async (req, res) => {
     try {
         const { id } = req.params;
-        const { message } = req.body;
+        const { message, selected = '' } = req.body;
         let originalChat = await Chat.findById(id);
         originalChat.messages.push({
             sender: 'user',
@@ -46,7 +46,14 @@ export const updateChat = async (req, res) => {
             timestamp: new Date()
         });
         originalChat.save();
-        const response = await query(message).output_text;
+        if (!originalChat) {
+            return res.status(404).json({ message: "Chat not found" });
+        }
+        let resquestMessages = message;
+        if(selected) {
+            resquestMessages += '\nfollowing is the selected context in the journal that I would like to reference:\n' + selected;
+        }
+        const response = await query(resquestMessages).output_text;
         originalChat.messages.push({
             sender: 'llm',
             content: response,
