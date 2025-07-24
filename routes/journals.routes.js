@@ -1,14 +1,14 @@
 import express from "express";
-import { createJournal } from "../controllers/journals.controller.js";
+import { createJournal, deleteJournal, getJournals, searchJournals, updateJournal } from "../controllers/journals.controller.js";
 
 const router = express.Router();
 
-// router.get("/", getJournals);
+router.get("/", getJournals);
 router.post("/", createJournal);
-// router.get("/:id", getJournalById);
-// router.put("/:id", updateJournal);
-// router.delete("/:id", deleteJournal);
+router.get("/:id", getJournals);
+router.put("/:id", updateJournal);
+router.delete("/:id", deleteJournal);
 
-// router.get("/search", searchJournals);
+router.get("/search", searchJournals); // Assuming you have a searchJournals function
 
 export default router;
