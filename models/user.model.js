@@ -35,6 +35,14 @@ const userSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Chat'
     }],
+    summary:{
+        type: String,
+        required: false,
+    },
+    insight:{
+        type: String,
+        required: false,
+    },
 },
 {
     timestamps: true,
