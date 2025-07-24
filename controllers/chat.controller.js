@@ -6,29 +6,35 @@ export const createChat = async (req, res) => {
         const userId = req.user.userId;
         const newChat = new Chat({ userId });
         await newChat.save();
+        newChat.createdAt = newChat.createdAt.getTime();
+        newChat.updatedAt = new Date().getTime();
         res.status(201).json(newChat);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
 }
 
-// export const getChatById = async (req, res) => {
-//     try {
-//         console.log("Fetching chat by ID");
-//         const userId = req.user.userId;
-//         const { id } = req.params;
-//         const chat = await Chat.findById(id);
-//         if (!chat) {
-//             return res.status(404).json({ message: "Chat not found" });
-//         }
-//         if (chat.userId !== userId) {
-//             return res.status(403).json({ message: "Access denied" });
-//         }
-//         res.status(200).json(chat);
-//     } catch (error) {
-//         res.status(500).json({ message: error.message });
-//     }
-// }
+export const getChatById = async (req, res) => {
+    try {
+        console.log("Fetching chat by ID");
+        const userId = req.user.userId;
+        const { id } = req.params;
+        const chat = await Chat.findById(id);
+        if (!chat) {
+            return res.status(404).json({ message: "Chat not found" });
+        }
+        if (chat.userId !== userId) {
+            return res.status(403).json({ message: "Access denied" });
+        }
+        res.status(200).json({
+            ...chat.toObject(),
+            createdAt: chat.createdAt.getTime(),
+            updatedAt: chat.updatedAt.getTime(),
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+}
 
 export const getChatHistory = async (req, res) => {
     try {
@@ -41,6 +47,10 @@ export const getChatHistory = async (req, res) => {
         if(!chats || chats.length === 0) {
             return res.status(404).json({ message: "No chats found" });
         }
+        chats.forEach(chat => {
+            chat.createdAt = chat.createdAt.getTime();
+            chat.updatedAt = chat.updatedAt.getTime();
+        });
         res.status(200).json(chats);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -77,6 +87,11 @@ export const updateChat = async (req, res) => {
         if (!originalChat) {
             return res.status(404).json({ message: "Chat not found" });
         }
+        originalChat.createdAt = originalChat.createdAt.getTime();
+        originalChat.updatedAt = originalChat.updatedAt.getTime();
+        originalChat.messages.forEach(message => {
+            message.timestamp = message.timestamp.getTime();
+        });
         res.status(200).json({ originalChat, response });
     } catch (error) {
         res.status(500).json({ message: error.message });

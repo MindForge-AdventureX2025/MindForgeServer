@@ -15,7 +15,11 @@ export const createJournal = async (req, res) => {
         });
         await version.save();
         await User.findByIdAndUpdate(userId, { $push: { journalIds: newJournal._id } });
-
+        newJournal = {
+            ...newJournal.toObject(),
+            createdAt: createdAt.getTime(),
+            updatedAt: new Date().getTime(),
+        }
         res.status(201).json(newJournal);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -28,6 +32,10 @@ export const getJournals = async (req, res) => {
         const { limit = 10, page = 1 } = req.query;
         const skip = (page - 1) * limit;
         const journals = await Journal.find({ userId }).sort({ updatedAt: -1 }).skip(skip).limit(limit);
+        journals.forEach(journal => {
+            journal.createdAt = journal.createdAt.getTime();
+            journal.updatedAt = journal.updatedAt.getTime();
+        });
         res.status(200).json(journals);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -41,7 +49,11 @@ export const getJournalById = async (req, res) => {
         if (!journal) {
             return res.status(404).json({ message: "Journal not found" });
         }
-        res.status(200).json(journal);
+        res.status(200).json({
+            ...journal.toObject(),
+            createdAt: journal.createdAt.getTime(),
+            updatedAt: journal.updatedAt.getTime(),
+        });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -61,6 +73,8 @@ export const updateJournal = async (req, res) => {
             content: content,
         });
         await version.save();
+        updatedJournal.createdAt = updatedJournal.createdAt.getTime();
+        updatedJournal.updatedAt = updatedJournal.updatedAt.getTime();
         res.status(200).json(updatedJournal);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -74,6 +88,8 @@ export const deleteJournal = async (req, res) => {
         if (!deletedJournal) {
             return res.status(404).json({ message: "Journal not found" });
         }
+        await Version.deleteMany({ journalId: id });
+        await User.findByIdAndUpdate(req.user.userId, { $pull: { journalIds: id } });
         res.status(200).json({ message: "Journal deleted successfully" });
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -106,6 +122,10 @@ export const searchJournals = async (req, res) => {
         if (journals.length === 0) {
             return res.status(404).json({ message: "No journals found" });
         }
+        journals.forEach(journal => {
+            journal.createdAt = journal.createdAt.getTime();
+            journal.updatedAt = journal.updatedAt.getTime();
+        });
         res.status(200).json(journals);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -129,7 +149,13 @@ export const addTags = async (req, res) => {
             tags: journal.tags,
         });
         await version.save();
-        res.status(200).json(journal);
+        journal.createdAt = journal.createdAt.getTime();
+        journal.updatedAt = journal.updatedAt.getTime();
+        res.status(200).json({
+            ...journal.toObject(),
+            createdAt: journal.createdAt,
+            updatedAt: journal.updatedAt,
+        });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -152,7 +178,13 @@ export const removeTags = async (req, res) => {
             tags: journal.tags,
         });
         await version.save();
-        res.status(200).json(journal);
+        journal.createdAt = journal.createdAt.getTime();
+        journal.updatedAt = journal.updatedAt.getTime();
+        res.status(200).json({
+            ...journal.toObject(),
+            createdAt: journal.createdAt,
+            updatedAt: journal.updatedAt,
+        });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -167,6 +199,10 @@ export const getJournalVersions = async (req, res) => {
         if (!versions || versions.length === 0) {
             return res.status(404).json({ message: "No versions found for this journal" });
         }
+        versions.forEach(version => {
+            version.createdAt = version.createdAt.getTime();
+            version.updatedAt = version.updatedAt.getTime();
+        });
         res.status(200).json(versions);
     } catch (error) {
         res.status(500).json({ message: error.message });
