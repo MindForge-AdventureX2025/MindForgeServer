@@ -24,7 +24,10 @@ export const createJournal = async (req, res) => {
 
 export const getJournals = async (req, res) => {
     try {
-        const journals = await Journal.find();
+        const userId = req.user.userId;
+        const { limit = 10, page = 1 } = req.query;
+        const skip = (page - 1) * limit;
+        const journals = await Journal.find({ userId }).sort({ updatedAt: -1 }).skip(skip).limit(limit);
         res.status(200).json(journals);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -158,7 +161,9 @@ export const removeTags = async (req, res) => {
 export const getJournalVersions = async (req, res) => {
     try {
         const { id } = req.params;
-        const versions = await Version.find({ journalId: id }).sort({ createdAt: -1 });
+        const { limit = 10, page = 1 } = req.query;
+        const skip = (page - 1) * limit;
+        const versions = await Version.find({ journalId: id }).sort({ createdAt: -1 }).skip(skip).limit(limit);
         if (!versions || versions.length === 0) {
             return res.status(404).json({ message: "No versions found for this journal" });
         }
