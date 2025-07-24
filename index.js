@@ -9,6 +9,7 @@ dotenv.config();
 import helmet from 'helmet';
 import { connect } from 'http2';
 import connectDB from './database/db.js';
+import { syncUser } from './controllers/user.controller.js';
 const app = express();
 
 app.use(cors(
@@ -22,6 +23,7 @@ app.use(helmet());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(clerkMiddleware()); // Middleware for Clerk authentication
+app.use(syncUser); // Middleware to sync user data
 
 app.use('/api/journals', journalsRoutes);
 // app.use('/api/chats', chatsRoutes);

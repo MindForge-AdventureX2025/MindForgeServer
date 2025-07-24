@@ -1,22 +1,20 @@
 import User from "../models/user.model";
+import { getAuth, clerkClient } from "@clerk/express";
 
-export const syncUser = async (req, res) => {
+export const syncUser = async (req, res, next) => {
     try {
-        const { firstname, lastname, email, clerkId } = req.body;
+        const { userId } = getAuth(req);
+        const clerkUser = await clerkClient.users.getUser(userId);
+        const { firstname, lastname, email } = clerkUser;
 
         // Check if user already exists
-        let user = await User.findOne({ clerkId });
+        let user = await User.findOne({ clerkId: userId });
         if (user) {
-            // Update existing user
-            user.firstname = firstname;
-            user.lastname = lastname;
-            user.email = email;
-            await user.save();
-            return res.status(200).json(user);
+            next(); // User exists, proceed to next middleware
         }
 
         // Create new user
-        user = new User({ firstname, lastname, email, clerkId });
+        user = new User({ firstname, lastname, email, clerkId: userId });
         await user.save();
         res.status(201).json(user);
     } catch (error) {
