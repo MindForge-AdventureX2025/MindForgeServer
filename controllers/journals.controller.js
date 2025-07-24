@@ -119,6 +119,13 @@ export const addTags = async (req, res) => {
         }
         journal.tags.push(...tags);
         await journal.save();
+        const version = new Version({
+            journalId: journal._id,
+            userId: req.user.userId,
+            content: journal.content,
+            tags: journal.tags,
+        });
+        await version.save();
         res.status(200).json(journal);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -135,6 +142,13 @@ export const removeTags = async (req, res) => {
         }
         journal.tags = journal.tags.filter(tag => !tags.includes(tag));
         await journal.save();
+        const version = new Version({
+            journalId: journal._id,
+            userId: req.user.userId,
+            content: journal.content,
+            tags: journal.tags,
+        });
+        await version.save();
         res.status(200).json(journal);
     } catch (error) {
         res.status(500).json({ message: error.message });
