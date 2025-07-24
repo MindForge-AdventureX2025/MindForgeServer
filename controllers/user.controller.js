@@ -20,7 +20,7 @@ export const syncUser = async (req, res, next) => {
         // Create new user
         user = new User({ firstName, lastName, email, clerkId: userId, avatarUrl: imageUrl });
         await user.save();
-        res.status(201).json(user);
+        next(); // Proceed to next middleware
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
