@@ -4,6 +4,7 @@ import Journal from "../models/journal.model.js";
 export const createJournal = async (req, res) => {
     try {
         console.log("Creating journal with body:", req.body);
+        res.send("Journal creation endpoint hit");
         const { title, content, userId } = req.body;
         const newJournal = new Journal({ title, content, userId });
         await newJournal.save();
