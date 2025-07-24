@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import journalsRoutes from './routes/journals.routes.js';
-import chatsRoutes from './routes/chats.routes.js';
+// import chatsRoutes from './routes/chats.routes.js';
 import { clerkMiddleware } from '@clerk/express';
 
 dotenv.config();
@@ -24,7 +24,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(clerkMiddleware()); // Middleware for Clerk authentication
 
 app.use('/api/journals', journalsRoutes);
-app.use('/api/chats', chatsRoutes);
+// app.use('/api/chats', chatsRoutes);
 
 const PORT = process.env.PORT || 3000;
 
