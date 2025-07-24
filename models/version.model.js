@@ -18,8 +18,12 @@ const versionSchema = new mongoose.Schema({
     tags:[{
         type: String,
         required: false,
-    }]
-},{
+    }],
+    audioIds: [{
+        type: String,
+        required: false,
+    }],
+}, {
     timestamps: true,
 });
 
