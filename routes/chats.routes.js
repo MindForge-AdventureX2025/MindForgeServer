@@ -4,7 +4,7 @@ import { createChat, getChatById, getChatHistory, updateChat } from "../controll
 const router = express.Router();
 
 router.get("/:id", getChatById);
-router.get("/history", getChatHistory);
+router.get("/", getChatHistory);
 router.post("/", createChat);
 router.put("/:id", updateChat);
 
