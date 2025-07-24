@@ -4,6 +4,8 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 import helmet from 'helmet';
+import { connect } from 'http2';
+import connectDB from './database/db.js';
 const app = express();
 
 app.use(cors(
@@ -26,4 +28,5 @@ const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
+    connectDB(); // Ensure the database connection is established
 });
