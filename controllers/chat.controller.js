@@ -12,23 +12,23 @@ export const createChat = async (req, res) => {
     }
 }
 
-export const getChatById = async (req, res) => {
-    try {
-        console.log("Fetching chat by ID");
-        const userId = req.user.userId;
-        const { id } = req.params;
-        const chat = await Chat.findById(id);
-        if (!chat) {
-            return res.status(404).json({ message: "Chat not found" });
-        }
-        if (chat.userId !== userId) {
-            return res.status(403).json({ message: "Access denied" });
-        }
-        res.status(200).json(chat);
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-}
+// export const getChatById = async (req, res) => {
+//     try {
+//         console.log("Fetching chat by ID");
+//         const userId = req.user.userId;
+//         const { id } = req.params;
+//         const chat = await Chat.findById(id);
+//         if (!chat) {
+//             return res.status(404).json({ message: "Chat not found" });
+//         }
+//         if (chat.userId !== userId) {
+//             return res.status(403).json({ message: "Access denied" });
+//         }
+//         res.status(200).json(chat);
+//     } catch (error) {
+//         res.status(500).json({ message: error.message });
+//     }
+// }
 
 export const getChatHistory = async (req, res) => {
     try {
