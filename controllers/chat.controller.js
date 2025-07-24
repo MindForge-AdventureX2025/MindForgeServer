@@ -43,7 +43,11 @@ export const getChatHistory = async (req, res) => {
         console.log("User ID:", userId);
         const { limit = 10, page = 1 } = req.query;
         const skip = (page - 1) * limit;
-        const chats = await Chat.find({ userId }).sort({ createdAt: -1 }).skip(skip).limit(limit);
+        const chats = await Chat.find({ userId }).
+        select("-messages").
+        sort({ updatedAt: -1 }).
+        skip(skip).
+        limit(limit);
         if(!chats || chats.length === 0) {
             return res.status(404).json({ message: "No chats found" });
         }
