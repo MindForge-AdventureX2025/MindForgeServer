@@ -5,7 +5,7 @@ export const createJournal = async (req, res) => {
     try {
         const userId = req.user.userId;
         const { title = "title", content = "content" } = req.body;
-        const newJournal = new Journal({ title, content, clerkId: userId });
+        const newJournal = new Journal({ title, content, clerkId: req.user.clerkId });
         await newJournal.save();
         await User.findByIdAndUpdate(userId, { $push: { journalIds: newJournal._id } });
 

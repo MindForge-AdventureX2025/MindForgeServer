@@ -13,13 +13,19 @@ export const syncUser = async (req, res, next) => {
 
         const clerkUser = await clerkClient.users.getUser(userId);
         console.log("Clerk user data:", clerkUser);
-        console.log(clerkUser.email_addresses[0]);
         console.log(clerkUser.emailAddresses[0]);
-        const { firstName, lastName, imageUrl } = clerkUser;
+        const { firstName, lastName, imageUrl, username } = clerkUser;
         const email = clerkUser.emailAddresses[0]?.emailAddress;
 
         // Create new user
-        user = new User({ firstName, lastName, email, clerkId: userId, avatarUrl: imageUrl });
+        user = new User({
+            firstName: firstName || '',
+            lastName: lastName || '',
+            username: username || '',
+            email: email || '',
+            clerkId: userId,
+            avatarUrl: imageUrl || ''
+        });
         await user.save();
         req.user = {
             ...user,
