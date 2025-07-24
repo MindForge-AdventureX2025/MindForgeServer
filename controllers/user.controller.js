@@ -6,7 +6,10 @@ export const syncUser = async (req, res, next) => {
         const { userId } = getAuth(req);
         const clerkUser = await clerkClient.users.getUser(userId);
         console.log("Clerk user data:", clerkUser);
-        const { firstname, lastname, email } = clerkUser;
+        console.log(clerkUser.email_addresses[0]);
+        console.log(clerkUser.emailAddresses[0]);
+        const { firstName, lastName, imageUrl } = clerkUser;
+        const email = clerkUser.emailAddresses[0].emailAddress;
 
         // Check if user already exists
         let user = await User.findOne({ clerkId: userId });
@@ -15,7 +18,7 @@ export const syncUser = async (req, res, next) => {
         }
 
         // Create new user
-        user = new User({ firstname, lastname, email, clerkId: userId });
+        user = new User({ firstName, lastName, email, clerkId: userId, avatarUrl: imageUrl });
         await user.save();
         res.status(201).json(user);
     } catch (error) {
