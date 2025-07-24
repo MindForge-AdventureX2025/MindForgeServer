@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { type } from "os";
 
 const chatSchema = new mongoose.Schema({
     userId: {
@@ -6,24 +7,28 @@ const chatSchema = new mongoose.Schema({
         ref: 'User',
         required: true,
     },
-    messages: [{
-        sender: {
-            type: String,
-            required: true,
-        },
-        content: {
-            type: String,
-            required: true,
-        },
-        journalId: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'Journal',
-        },
-        timestamp: {
-            type: Date,
-            default: Date.now,
-        }
-    }],
+    messages: {
+        type: [{
+            sender: {
+                type: String,
+                enum: ['user', 'ai'],
+                required: true,
+            },
+            content: {
+                type: String,
+                required: true,
+            },
+            journalId: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'Journal',
+            },
+            timestamp: {
+                type: Date,
+                default: Date.now,
+            }
+        }],
+        required: false, // Messages can be empty initially
+    },
 }, {
     timestamps: true,
 });
