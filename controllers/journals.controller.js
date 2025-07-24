@@ -8,11 +8,9 @@ export const createJournal = async (req, res) => {
         const { userId } = getAuth(req);
         console.log("Authenticated user ID:", userId);
         res.send("Journal creation endpoint hit");
-        // const { title, content, userId } = req.body;
-        // const newJournal = new Journal({ title, content, userId });
-        // await newJournal.save();
-
-        // Update user's journalIds
+        const { title = "title", content = "content" } = req.body;
+        const newJournal = new Journal({ title, content, userId });
+        await newJournal.save();
         await User.findByIdAndUpdate(userId, { $push: { journalIds: newJournal._id } });
 
         res.status(201).json(newJournal);
