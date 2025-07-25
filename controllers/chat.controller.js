@@ -18,6 +18,7 @@ export const createChat = async (req, res) => {
         });
         res.status(201).json(newChat);
     } catch (error) {
+        console.log("error: ", error);
         res.status(500).json({ message: error.message });
     }
 }
@@ -45,6 +46,7 @@ export const getChatById = async (req, res) => {
             }))
         });
     } catch (error) {
+        console.log("error: ", error);
         res.status(500).json({ message: error.message });
     }
 }
@@ -71,6 +73,7 @@ export const getChatHistory = async (req, res) => {
         });
         res.status(200).json(chats);
     } catch (error) {
+        console.log("error: ", error);
         res.status(500).json({ message: error.message });
     }
 }
@@ -122,6 +125,7 @@ export const updateChat = async (req, res) => {
         });
         res.status(200).json({ originalChat, response });
     } catch (error) {
+        console.log("error: ", error);
         res.status(500).json({ message: error.message });
     }
 }
@@ -142,6 +146,7 @@ export const updateChatName = async (req, res) => {
         await chat.save();
         res.status(200).json("Chat title updated successfully");
     } catch (error) {
+        console.log("error: ", error);
         res.status(500).json({ message: error.message });
     }
 }
@@ -167,6 +172,7 @@ export const deleteChat = async (req, res) => {
         });
         res.status(200).json({ message: "Chat deleted successfully" });
     } catch (error) {
+        console.log("error: ", error);
         res.status(500).json({ message: error.message });
     }
 }

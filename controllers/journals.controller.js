@@ -23,6 +23,7 @@ export const createJournal = async (req, res) => {
         }
         res.status(201).json(newJournal);
     } catch (error) {
+        console.log("error: ", error);
         res.status(500).json({ message: error.message });
     }
 }
@@ -43,6 +44,7 @@ export const getJournals = async (req, res) => {
         });
         res.status(200).json(journals);
     } catch (error) {
+        console.log("error: ", error);
         res.status(500).json({ message: error.message });
     }
 }
@@ -66,6 +68,7 @@ export const getJournalById = async (req, res) => {
             nonTitleUpdatedAt: new Date(journal.nonTitleUpdatedAt).getTime(),
         });
     } catch (error) {
+        console.log("error: ", error);
         res.status(500).json({ message: error.message });
     }
 }
@@ -89,6 +92,7 @@ export const updateJournal = async (req, res) => {
         updatedJournal.nonTitleUpdatedAt = new Date(updatedJournal.nonTitleUpdatedAt).getTime();
         res.status(200).json(updatedJournal);
     } catch (error) {
+        console.log("error: ", error);
         res.status(500).json({ message: error.message });
     }
 }
@@ -126,6 +130,7 @@ export const searchJournals = async (req, res) => {
         });
         res.status(200).json(journals);
     } catch (error) {
+        console.log("error: ", error);
         res.status(500).json({ message: error.message });
     }
 }
@@ -156,6 +161,7 @@ export const addTags = async (req, res) => {
             nonTitleUpdatedAt: new Date(journal.nonTitleUpdatedAt).getTime(),
         });
     } catch (error) {
+        console.log("error: ", error);
         res.status(500).json({ message: error.message });
     }
 }
@@ -186,6 +192,7 @@ export const removeTags = async (req, res) => {
             nonTitleUpdatedAt: new Date(journal.nonTitleUpdatedAt).getTime(),
         });
     } catch (error) {
+        console.log("error: ", error);
         res.status(500).json({ message: error.message });
     }
 }
@@ -206,6 +213,7 @@ export const getJournalVersions = async (req, res) => {
         });
         res.status(200).json(versions);
     } catch (error) {
+        console.log("error: ", error);
         res.status(500).json({ message: error.message });
     }
 }
@@ -226,6 +234,7 @@ export const getJournalHistory = async (req, res) => {
         });
         res.status(200).json(journals);
     } catch (error) {
+        console.log("error: ", error);
         res.status(500).json({ message: error.message });
     }
 }
@@ -253,6 +262,7 @@ export const setVersionById = async (req, res) => {
             nonTitleUpdatedAt: new Date(journal.nonTitleUpdatedAt).getTime(),
         });
     } catch (error) {
+        console.log("error: ", error);
         res.status(500).json({ message: error.message });
     }
 }
@@ -278,6 +288,7 @@ export const renameJournal = async (req, res) => {
         });
         res.status(200).json({ message: "Journal renamed successfully", journal });
     } catch (error) {
+        console.log("error: ", error);
         res.status(500).json({ message: error.message });
     }
 }
@@ -297,6 +308,7 @@ export const deleteJournal = async (req, res) => {
         await User.findByIdAndUpdate(req.user.userId, { $pull: { journalIds: id } });
         res.status(200).json({ message: "Journal deleted successfully" });
     } catch (error) {
+        console.log("error: ", error);
         res.status(500).json({ message: error.message });
     }
 }
