@@ -1,361 +1,51 @@
 {
-    "name": "supervisor_agent",
-    "description": "中央协调器，负责分析用户请求、规划执行流程、分配任务给专业Agent并监督整个工作流程的完成",
-    "input": {
-        "user_query": {
-            "type": "string",
-            "description": "用户的原始查询文本",
-            "required": true
-        },
-        "available_agents": {
-            "type": "array",
-            "description": "系统中所有可用agent的完整信息",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "name": {
-                        "type": "string",
-                        "description": "agent的唯一标识符"
-                    },
-                    "description": {
-                        "type": "string",
-                        "description": "agent的功能描述"
-                    },
-                    "capabilities": {
-                        "type": "array",
-                        "description": "agent的核心能力标签列表"
-                    },
-                    "input_schema": {
-                        "type": "object",
-                        "description": "agent接受的输入参数结构"
-                    },
-                    "output_schema": {
-                        "type": "object",
-                        "description": "agent返回的输出结构"
-                    }
-                }
-            },
-            "required": true
-        },
-        "context": {
-            "type": "object",
-            "description": "当前任务的上下文信息，包括用户历史、系统状态等",
-            "required": false
+  "workflow": {
+    "name": "Search-Analyze-Code-Report Pipeline",
+    "version": "1.0",
+    "agents": [
+      {
+        "name": "web_search_agent",
+        "next": "analysis_agent",
+        "config": {
+          "tool_sets": ["think", "web_search", "crawl", "terminate", "planning"],
+          "system_prompt_key": "web-search-prompt",
+          "description": "Web Search Tool is a general-purpose internet retrieval assistant designed to gather information from the public internet. Core functions include: 1.Execute Search Queries: Perform queries against major search engines, returning a list of search results with titles, URLs, and content snippets; 2.Content Retrieval: Fetch the main content of specified public URLs, providing raw or cleaned HTML content; 3.Parameter Customization: Support for setting the number of search results and search engine preferences (where supported); 4.Information Retrieval: Deliver pure information retrieval service, presenting search results in a structured format for further processing. Limitations: 1)This tool does not analyze search results, synthesize information from multiple sources, or generate comprehensive reports; 2)Cannot access content behind paywalls, login screens, or bypass robots.txt restrictions; 3)Does not interact with web pages (e.g., filling forms, clicking buttons) - use browser_use_worker for such tasks; 4)Output is limited to search result listings or webpage content, intended for further processing or review; 5)Does not provide summaries of multiple articles or answers to complex questions requiring synthesis. This tool focuses on efficient web content retrieval, providing users with raw search data without content interpretation or summarization."
         }
-    },
-    "output": {
-        "execution_plan": {
-            "type": "object",
-            "description": "完整的执行计划，包含工作流程和各Agent的调用顺序",
-            "properties": {
-                "workflow": {
-                    "type": "array",
-                    "description": "按执行顺序排列的步骤数组",
-                    "items": {
-                        "type": "object",
-                        "properties": {
-                            "step_id": {
-                                "type": "string",
-                                "description": "步骤的唯一标识符"
-                            },
-                            "agent": {
-                                "type": "string",
-                                "description": "执行此步骤的agent名称"
-                            },
-                            "input": {
-                                "type": "object",
-                                "description": "提供给agent的输入参数"
-                            },
-                            "middleware": {
-                                "type": "object",
-                                "description": "用于转换前一步骤输出到当前步骤输入的中间件配置",
-                                "properties": {
-                                    "input_mapping": {
-                                        "type": "object",
-                                        "description": "定义如何将前置步骤的输出字段映射到当前步骤的输入字段"
-                                    },
-                                    "transformations": {
-                                        "type": "array",
-                                        "description": "需要应用的数据转换操作列表",
-                                        "items": {
-                                            "type": "object",
-                                            "properties": {
-                                                "type": {
-                                                    "type": "string",
-                                                    "description": "转换类型，如format_change, filter, enrich等"
-                                                },
-                                                "source_field": {
-                                                    "type": "string",
-                                                    "description": "源数据字段"
-                                                },
-                                                "target_field": {
-                                                    "type": "string",
-                                                    "description": "目标数据字段"
-                                                },
-                                                "config": {
-                                                    "type": "object",
-                                                    "description": "转换的具体配置"
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                },
-                "final_integration": {
-                    "type": "object",
-                    "description": "如何整合各步骤结果的说明"
-                }
-            }
-        },
-        "explanation": {
-            "type": "string",
-            "description": "对执行计划的解释，说明为何选择这些agent和此工作流程"
+      },
+      {
+        "name": "analysis_agent",
+        "next": "coder_agent",
+        "config": {
+          "tool_sets": ["think", "file_read", "file_editor", "terminate", "planning"],
+          "system_prompt_key": "analysis-prompt",
+          "description": "This agent is specialized in data analysis and processing. Core capabilities include comprehensive data examination, statistical analysis, pattern recognition, and insight generation from structured and unstructured data sources. Key functions: 1)Advanced Data Processing: Clean, normalize, and transform raw data into structured formats suitable for analysis; 2)Statistical Analysis: Perform complex statistical computations, hypothesis testing, and quantitative analysis; 3)Pattern Recognition: Identify trends, correlations, and meaningful patterns in datasets; 4)Insight Generation: Extract actionable insights and key findings from analyzed data; 5)Data Validation: Verify data quality and ensure analytical accuracy. Limitations: 1)Does not collect new data - works exclusively with provided datasets; 2)Cannot generate formal reports or presentations; 3)No machine learning model training capabilities; 4)Does not make business recommendations; 5)Cannot perform real-time data analysis; 6)Limited to statistical and analytical processing without predictive modeling."
         }
-    },
-    "example": {
-        "input": {
-            "user_query": "我需要写一篇关于冥想如何帮助减轻焦虑的情绪日记，并分析我最近一周的情绪状态。",
-            "available_agents": [
-                {
-                    "name": "search_agent",
-                    "description": "搜索相关信息和参考资料",
-                    "capabilities": ["search", "information_retrieval"],
-                    "input_schema": {
-                        "query": {
-                            "type": "string",
-                            "description": "搜索查询"
-                        },
-                        "result_count": {
-                            "type": "number",
-                            "description": "返回结果数量"
-                        }
-                    },
-                    "output_schema": {
-                        "results": {
-                            "type": "array",
-                            "description": "搜索结果列表",
-                            "items": {
-                                "title": {
-                                    "type": "string",
-                                    "description": "结果标题"
-                                },
-                                "content": {
-                                    "type": "string",
-                                    "description": "结果内容"
-                                },
-                                "source": {
-                                    "type": "string",
-                                    "description": "来源"
-                                }
-                            }
-                        }
-                    }
-                },
-                {
-                    "name": "summarize_agent",
-                    "description": "分析日记内容并生成简洁摘要，捕捉核心情绪和主要事件",
-                    "capabilities": ["summarization", "content_analysis"],
-                    "input_schema": {
-                        "content_type": {
-                            "type": "string",
-                            "description": "内容类型，如journal, article等"
-                        },
-                        "content": {
-                            "type": "string",
-                            "description": "需要总结的内容"
-                        },
-                        "search_results": {
-                            "type": "array",
-                            "description": "参考资料搜索结果"
-                        }
-                    },
-                    "output_schema": {
-                        "summary": {
-                            "type": "string",
-                            "description": "内容摘要"
-                        },
-                        "key_points": {
-                            "type": "array",
-                            "description": "关键点列表"
-                        },
-                        "emotion_keywords": {
-                            "type": "array",
-                            "description": "情绪关键词"
-                        }
-                    }
-                },
-                {
-                    "name": "emotion_agent",
-                    "description": "分析文本中表达的情绪状态",
-                    "capabilities": ["emotion_analysis", "sentiment_tracking"],
-                    "input_schema": {
-                        "content": {
-                            "type": "string",
-                            "description": "需要分析情绪的文本内容"
-                        },
-                        "time_period": {
-                            "type": "string",
-                            "description": "分析时间段，如last_week, last_month等"
-                        },
-                        "detailed_analysis": {
-                            "type": "boolean",
-                            "description": "是否生成详细分析"
-                        }
-                    },
-                    "output_schema": {
-                        "primary_emotion": {
-                            "type": "string",
-                            "description": "主要情绪"
-                        },
-                        "emotion_scores": {
-                            "type": "object",
-                            "description": "各种情绪的量化分数"
-                        },
-                        "trend_analysis": {
-                            "type": "object",
-                            "description": "情绪趋势分析"
-                        },
-                        "detailed_report": {
-                            "type": "string",
-                            "description": "详细的情绪分析报告"
-                        }
-                    }
-                },
-                {
-                    "name": "report_agent",
-                    "description": "生成综合数据分析报告",
-                    "capabilities": ["report_generation", "data_visualization"],
-                    "input_schema": {
-                        "report_type": {
-                            "type": "string",
-                            "description": "报告类型"
-                        },
-                        "emotion_data": {
-                            "type": "object",
-                            "description": "情绪分析数据"
-                        },
-                        "journal_summary": {
-                            "type": "object",
-                            "description": "日记摘要"
-                        }
-                    },
-                    "output_schema": {
-                        "report": {
-                            "type": "object",
-                            "description": "生成的报告",
-                            "properties": {
-                                "title": {
-                                    "type": "string",
-                                    "description": "报告标题"
-                                },
-                                "sections": {
-                                    "type": "array",
-                                    "description": "报告各部分内容"
-                                },
-                                "visualizations": {
-                                    "type": "array",
-                                    "description": "数据可视化图表"
-                                },
-                                "recommendations": {
-                                    "type": "array",
-                                    "description": "建议列表"
-                                }
-                            }
-                        }
-                    }
-                }
-            ]
-        },
-        "output": {
-            "execution_plan": {
-                "workflow": [
-                    {
-                        "step_id": "step1",
-                        "agent": "search_agent",
-                        "input": {
-                            "query": "冥想如何帮助减轻焦虑",
-                            "result_count": 5
-                        }
-                    },
-                    {
-                        "step_id": "step2",
-                        "agent": "emotion_agent",
-                        "input": {
-                            "time_period": "last_week",
-                            "detailed_analysis": true
-                        }
-                    },
-                    {
-                        "step_id": "step3",
-                        "agent": "summarize_agent",
-                        "input": {
-                            "content_type": "journal",
-                            "search_results": "{{step1.results}}"
-                        },
-                        "middleware": {
-                            "input_mapping": {
-                                "search_results": "step1.results"
-                            },
-                            "transformations": [
-                                {
-                                    "type": "format_change",
-                                    "source_field": "results",
-                                    "target_field": "search_results",
-                                    "config": {
-                                        "flatten_structure": true,
-                                        "extract_content_only": false
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    {
-                        "step_id": "step4",
-                        "agent": "report_agent",
-                        "input": {
-                            "report_type": "情绪分析与冥想建议报告",
-                            "emotion_data": "{{step2.results}}",
-                            "journal_summary": "{{step3.results}}"
-                        },
-                        "middleware": {
-                            "input_mapping": {
-                                "emotion_data": "step2.results",
-                                "journal_summary": "step3.results"
-                            },
-                            "transformations": [
-                                {
-                                    "type": "merge",
-                                    "source_field": ["primary_emotion", "emotion_scores", "trend_analysis"],
-                                    "target_field": "emotion_data",
-                                    "config": {
-                                        "structure": "nested_object"
-                                    }
-                                },
-                                {
-                                    "type": "format_change",
-                                    "source_field": "summary",
-                                    "target_field": "journal_summary.content",
-                                    "config": {}
-                                },
-                                {
-                                    "type": "format_change", 
-                                    "source_field": "key_points",
-                                    "target_field": "journal_summary.highlights",
-                                    "config": {}
-                                }
-                            ]
-                        }
-                    }
-                ],
-                "final_integration": {
-                    "method": "sequential_presentation",
-                    "sections": ["journal_template", "emotion_analysis", "recommendations"]
-                }
-            },
-            "explanation": "基于用户需求，我设计了四步工作流：首先搜集冥想减轻焦虑的资料，同时分析用户近一周的情绪数据，然后基于搜索结果生成日记模板，最后整合情绪分析和日记内容生成完整报告。各步骤之间通过中间件处理数据格式转换，确保数据能顺利流转。"
+      },
+      {
+        "name": "coder_agent",
+        "next": "reporter_agent",
+        "config": {
+          "tool_sets": ["think", "web_search", "file_list", "file_read", "file_editor", "terminate", "planning", "edit_image", "generate_image"],
+          "system_prompt_key": "coder-prompt",
+          "description": "This worker is a **Frontend Web Specialist focused on building client-side web applications and interactive user interfaces using exclusively vanilla HTML, CSS, and JavaScript.** Its core responsibility is to translate design specifications and functional requirements into runnable, self-contained web code. It emphasizes creating lightweight, responsive, and performant solutions without relying on external frameworks or libraries. **CRITICAL LIMITATIONS:** 1) This worker **BUILDS FUNCTIONAL WEB APPLICATIONS/PAGES, NOT REPORTS OF ANY KIND.** When users request ANY type of report (including HTML reports, data reports, analysis reports, or summary reports), use the `reporter_worker` instead. This worker is ONLY for creating interactive web pages, applications, and user interfaces when users specifically request HTML/web pages WITHOUT mentioning reports. 2) It **DOES NOT** perform backend/server-side development or database interactions. 3) It **DOES NOT** utilize web frameworks (e.g., React, Angular, Vue) or common utility libraries (e.g., jQuery, Lodash). Only standard browser APIs are used. 4) It **DOES NOT** conduct research, data analysis, or content generation beyond placeholder text for UI elements. Its purpose is code generation based on provided specifications."
         }
+      },
+      {
+        "name": "reporter_agent",
+        "next": null,
+        "config": {
+          "tool_sets": ["file_list", "file_read", "file_editor", "think", "terminate", "planning", "edit_image", "generate_image"],
+          "system_prompt_key": "reporter-prompt",
+          "description": "This worker is **specialized in generating comprehensive narrative reports, summaries, and formal presentations of findings in ANY format including HTML reports.** Its SOLE RESPONSIBILITY is to synthesize existing data and analytical results (produced by other workers and available in the workspace) into a well-structured report. **CRITICAL ACTIVATION & OPERATING CONDITIONS:** 1) This worker MUST be used when users request ANY type of report (data reports, analysis reports, summary reports, HTML reports, etc.), regardless of the output format. 2) It **MUST NOT** be called until sufficient data has been collected and processed by other specialized workers. 3) This worker **DOES NOT** collect new data, perform data analysis, or execute code. It exclusively works with existing information and files within the workspace. 4) Its input is typically a directive to generate a report based on specified data or findings already gathered. 5) Output can be structured textual reports, executive summaries, HTML reports, or any other report format. Use this as the final step for presenting synthesized information in report form."
+        }
+      }
+    ],
+    "execution": {
+      "sequential": true,
+      "error_handling": {
+        "retry_count": 3,
+        "timeout": 300
+      }
     }
+  }
 }
