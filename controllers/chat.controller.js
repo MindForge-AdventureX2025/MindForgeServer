@@ -125,9 +125,9 @@ export const updateChatName = async (req, res) => {
         if (chat.userId.toString() !== userId) {
             return res.status(403).json({ message: "Access denied" });
         }
-        chat.name = name;
+        chat.title = name;
         await chat.save();
-        res.status(200).json("Chat name updated successfully");
+        res.status(200).json("Chat title updated successfully");
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
