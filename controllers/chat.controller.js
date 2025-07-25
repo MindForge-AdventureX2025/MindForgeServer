@@ -27,7 +27,7 @@ export const getChatById = async (req, res) => {
         console.log("Fetching chat by ID");
         const userId = req.user.userId;
         const { id } = req.params;
-        const chat = await Chat.findById(id);
+        const chat = await Chat.findById(id).populate("messages");
         if (!chat) {
             return res.status(404).json({ message: "Chat not found" });
         }
@@ -38,6 +38,11 @@ export const getChatById = async (req, res) => {
             ...chat.toObject(),
             createdAt: new Date(chat.createdAt).getTime(),
             updatedAt: new Date(chat.updatedAt).getTime(),
+            nonTitleUpdatedAt: new Date(chat.nonTitleUpdatedAt).getTime(),
+            messages: chat.messages.map(message => ({
+                ...message,
+                timestamp: new Date(message.timestamp).getTime()
+            }))
         });
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -62,6 +67,7 @@ export const getChatHistory = async (req, res) => {
         chats.forEach(chat => {
             chat.createdAt = new Date(chat.createdAt).getTime();
             chat.updatedAt = new Date(chat.updatedAt).getTime();
+            chat.nonTitleUpdatedAt = new Date(chat.nonTitleUpdatedAt).getTime();
         });
         res.status(200).json(chats);
     } catch (error) {

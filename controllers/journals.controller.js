@@ -40,6 +40,8 @@ export const getJournals = async (req, res) => {
             journal.createdAt = journal.createdAt.getTime();
             journal.updatedAt = new Date(journal.updatedAt);
             journal.updatedAt = journal.updatedAt.getTime();
+            journal.nonTitleUpdatedAt = new Date(journal.nonTitleUpdatedAt);
+            journal.nonTitleUpdatedAt = journal.nonTitleUpdatedAt.getTime();
         });
         res.status(200).json(journals);
     } catch (error) {
@@ -63,6 +65,7 @@ export const getJournalById = async (req, res) => {
             ...journal.toObject(),
             createdAt: journal.createdAt,
             updatedAt: journal.updatedAt,
+            nonTitleUpdatedAt: new Date(journal.nonTitleUpdatedAt).getTime(),
         });
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -85,6 +88,7 @@ export const updateJournal = async (req, res) => {
         await version.save();
         updatedJournal.createdAt = new Date(updatedJournal.createdAt).getTime();
         updatedJournal.updatedAt = new Date(updatedJournal.updatedAt).getTime();
+        updatedJournal.nonTitleUpdatedAt = new Date(updatedJournal.nonTitleUpdatedAt).getTime();
         res.status(200).json(updatedJournal);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -120,6 +124,7 @@ export const searchJournals = async (req, res) => {
         journals.forEach(journal => {
             journal.createdAt = new Date(journal.createdAt).getTime();
             journal.updatedAt = new Date(journal.updatedAt).getTime();
+            journal.nonTitleUpdatedAt = new Date(journal.nonTitleUpdatedAt).getTime();
         });
         res.status(200).json(journals);
     } catch (error) {
@@ -150,6 +155,7 @@ export const addTags = async (req, res) => {
             ...journal.toObject(),
             createdAt: journal.createdAt,
             updatedAt: journal.updatedAt,
+            nonTitleUpdatedAt: new Date(journal.nonTitleUpdatedAt).getTime(),
         });
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -179,6 +185,7 @@ export const removeTags = async (req, res) => {
             ...journal.toObject(),
             createdAt: journal.createdAt,
             updatedAt: journal.updatedAt,
+            nonTitleUpdatedAt: new Date(journal.nonTitleUpdatedAt).getTime(),
         });
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -197,6 +204,7 @@ export const getJournalVersions = async (req, res) => {
         versions.forEach(version => {
             version.createdAt = new Date(version.createdAt).getTime();
             version.updatedAt = new Date(version.updatedAt).getTime();
+            version.nonTitleUpdatedAt = new Date(version.nonTitleUpdatedAt).getTime();
         });
         res.status(200).json(versions);
     } catch (error) {
@@ -216,6 +224,7 @@ export const getJournalHistory = async (req, res) => {
         journals.forEach(journal => {
             journal.createdAt = new Date(journal.createdAt).getTime();
             journal.updatedAt = new Date(journal.updatedAt).getTime();
+            journal.nonTitleUpdatedAt = new Date(journal.nonTitleUpdatedAt).getTime();
         });
         res.status(200).json(journals);
     } catch (error) {
