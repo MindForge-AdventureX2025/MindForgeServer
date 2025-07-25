@@ -8,6 +8,6 @@ router.get("/", getChatHistory);
 router.post("/", createChat);
 router.put("/:id", updateChat);
 router.post("/rename/:id", updateChatName); // Assuming you have a deleteChat function
-router.get("/delete/:id", deleteChat); // Assuming you have a deleteChat function
+router.delete("/delete/:id", deleteChat); // Assuming you have a deleteChat function
 
 export default router;

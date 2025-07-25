@@ -145,7 +145,7 @@ export const deleteChat = async (req, res) => {
             return res.status(404).json({ message: "Chat not found" });
         }
         console.log("chat.userId:", chat.userId);
-        if (chat.userId !== userId) {
+        if (chat.userId.toString() !== userId) {
             return res.status(403).json({ message: "Access denied" });
         }
         await Chat.findByIdAndDelete(id);
