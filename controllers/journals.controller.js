@@ -273,7 +273,7 @@ export const setVersionById = async (req, res) => {
 export const renameJournal = async (req, res) => {
     try {
         const { id } = req.params;
-        const { title } = req.body;
+        const { name: title } = req.body;
         const journal = await Journal.findById(id);
         if (!journal) {
             return res.status(404).json({ message: "Journal not found" });
