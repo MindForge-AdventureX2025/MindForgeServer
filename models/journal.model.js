@@ -7,7 +7,7 @@ const journalSchema = new mongoose.Schema({
     },
     content: {
         type: String,
-        required: true,
+        required: false,
     },
     userId: {
         type: mongoose.Schema.Types.ObjectId,
