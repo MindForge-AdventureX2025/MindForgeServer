@@ -1,7 +1,7 @@
 import Chat from "../models/chat.model.js";
 import Journal from "../models/journal.model.js";
 import User from "../models/user.model.js";
-import { query } from "../utils/query.js";
+import { query, queryStream } from "../utils/query.js";
 
 export const createChat = async (req, res) => {
   try {
@@ -80,6 +80,11 @@ export const getChatHistory = async (req, res) => {
 
 export const updateChat = async (req, res) => {
   try {
+
+    res.setHeader('Content-Type', 'text/event-stream');  // 声明这是SSE流
+    res.setHeader('Cache-Control', 'no-cache');         // 禁用缓存
+    res.setHeader('Connection', 'keep-alive');          // 保持长连接
+    
     const { id } = req.params;
     const { message, selected = "", journalIds = [] } = req.body;
     let originalChat = await Chat.findById(id);
@@ -90,26 +95,31 @@ export const updateChat = async (req, res) => {
     });
     // await originalChat.save();
     if (!originalChat) {
-      return res.status(404).json({ message: "Chat not found" });
+      res.write(`event: error\ndata: ${JSON.stringify({ error: error.message })}\n\n`);
     }
-    let resquestMessages = message;
+    let requestMessages = message;
     if (journalIds && journalIds.length > 0) {
-      resquestMessages += "\n\nfollowing is the Journal that I would like to reference: {\n";
+      requestMessages += "\n\nfollowing is the Journal that I would like to reference: {\n";
       journalIds.forEach(async journalId => {
         const { title, content } = await Journal.findById(journalId);
-        resquestMessages += `\n\nJournal Title: ${title}\nJournal Content: ${content}`;
+        requestMessages += `\n\nJournal Title: ${title}\nJournal Content: ${content}`;
       });
-      resquestMessages += "\n}";
+      requestMessages += "\n}";
     }
     if (selected) {
-      resquestMessages +=
+      requestMessages +=
         "\n\nfollowing is the selected context in the journal that I would like to reference (the selected context is what I would like to emphasize. If you need to read something, feel free to read anything I provided with you. But if you need to add, remove, or replace something, that should be inside my selected context.): {\n" +
         selected +
         "\n}";
     }
-    console.log("Request Messages:", resquestMessages);
+    console.log("Request Messages:", requestMessages);
+
     // Assuming query is a function that interacts with an LLM or similar service
-    const response = (await query(resquestMessages)).output_text;
+    // const response = (await query(requestMessages)).output_text;
+    const response = await queryStream(requestMessages, res);
+
+    // const response = "你好"
+
     originalChat.messages.push({
       sender: "llm",
       content: response,
@@ -120,18 +130,23 @@ export const updateChat = async (req, res) => {
     );
     originalChat.messages[originalChat.messages.length - 1].journalId = [...ids, ...journalIds];
     await originalChat.save();
+
     if (!originalChat) {
-      return res.status(404).json({ message: "Chat not found" });
+        res.write(`event: error\ndata: ${JSON.stringify({ error: error.message })}\n\n`);
     }
+
     originalChat.createdAt = new Date(originalChat.createdAt).getTime();
     originalChat.updatedAt = new Date(originalChat.updatedAt).getTime();
     originalChat.messages.forEach(message => {
       message.timestamp = new Date(message.timestamp).getTime();
     });
-    res.status(200).json({ originalChat, response });
+    
+    res.write(`event: end\ndata: ${JSON.stringify({ originalChat, response })}\n\n`);
   } catch (error) {
-    console.log("error: ", error);
-    res.status(500).json({ message: error.message });
+    console.error("error: ", error);
+    res.write(`event: error\ndata: ${JSON.stringify({ error: error.message })}\n\n`);
+  } finally {
+    res.end()
   }
 };
 

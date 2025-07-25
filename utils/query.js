@@ -43,3 +43,38 @@ export const query = async (message) => {
         throw error;
     }
 };
+
+export const queryStream = async (message, res) => {
+    try {
+        let fullText = "";
+        const stream = await client.chat.completions.create({
+            model: "kimi-k2-0711-preview", // Try moonshot-v1-8k, moonshot-v1-32k, or moonshot-v1-128k
+            messages: [
+                {
+                    role: "system",
+                    content: data
+                },
+                {
+                    role: "user",
+                    content: message
+                }
+            ],
+            temperature: 0.7,
+            max_tokens: 1024,
+            stream: true
+        });
+
+        for await (const chunk of stream) {
+            fullText += contentChunk;
+            const contentChunk = chunk.choices[0]?.delta?.content || '';
+
+            res.write(`data: ${JSON.stringify({ chunk: contentChunk })}\n\n`);
+        }
+
+        return fullText;
+
+    } catch (error) {
+        console.error("Error in query function:", error);
+        res.write(`event: error\ndata: ${JSON.stringify({ error: error.message })}\n\n`);
+    }
+};
