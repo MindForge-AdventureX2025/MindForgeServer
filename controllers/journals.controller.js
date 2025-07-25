@@ -90,21 +90,6 @@ export const updateJournal = async (req, res) => {
     }
 }
 
-export const deleteJournal = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const deletedJournal = await Journal.findByIdAndDelete(id);
-        if (!deletedJournal) {
-            return res.status(404).json({ message: "Journal not found" });
-        }
-        await Version.deleteMany({ journalId: id });
-        await User.findByIdAndUpdate(req.user.userId, { $pull: { journalIds: id } });
-        res.status(200).json({ message: "Journal deleted successfully" });
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-}
-
 export const searchJournals = async (req, res) => {
     try {
         const { keyword, tags = '', from, to } = req.query;
@@ -232,6 +217,44 @@ export const getJournalHistory = async (req, res) => {
             journal.updatedAt = new Date(journal.updatedAt).getTime();
         });
         res.status(200).json(journals);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+}
+
+export const renameJournal = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { title } = req.body;
+        const journal = await Journal.findById(id);
+        if (!journal) {
+            return res.status(404).json({ message: "Journal not found" });
+        }
+        if (journal.userId.toString() !== req.user.userId) {
+            return res.status(403).json({ message: "Access denied" });
+        }
+        journal.title = title;
+        await journal.save();
+        res.status(200).json({ message: "Journal renamed successfully", journal });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+}
+
+export const deleteJournal = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const journal = await Journal.findById(id);
+        if (!journal) {
+            return res.status(404).json({ message: "Journal not found" });
+        }
+        if (journal.userId.toString() !== req.user.userId) {
+            return res.status(403).json({ message: "Access denied" });
+        }
+        await Journal.findByIdAndDelete(id);
+        await Version.deleteMany({ journalId: id });
+        await User.findByIdAndUpdate(req.user.userId, { $pull: { journalIds: id } });
+        res.status(200).json({ message: "Journal deleted successfully" });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

@@ -1,5 +1,6 @@
 import Chat from "../models/chat.model.js";
 import Journal from "../models/journal.model.js";
+import User from "../models/user.model.js";
 import { query } from "../utils/query.js";
 
 export const createChat = async (req, res) => {
@@ -9,6 +10,9 @@ export const createChat = async (req, res) => {
         await newChat.save();
         newChat.createdAt = new Date(newChat.createdAt).getTime();
         newChat.updatedAt = new Date().getTime();
+        await User.findByIdAndUpdate(userId, {
+            $push: { chatIds: newChat._id }
+        });
         res.status(201).json(newChat);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -149,6 +153,9 @@ export const deleteChat = async (req, res) => {
             return res.status(403).json({ message: "Access denied" });
         }
         await Chat.findByIdAndDelete(id);
+        await User.findByIdAndUpdate(userId, {
+            $pull: { chatIds: id }
+        });
         res.status(200).json({ message: "Chat deleted successfully" });
     } catch (error) {
         res.status(500).json({ message: error.message });
