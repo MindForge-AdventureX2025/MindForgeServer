@@ -227,12 +227,15 @@ export const getJournalHistory = async (req, res) => {
         if (!journals || journals.length === 0) {
             return res.status(404).json({ message: "No journals found" });
         }
-        journals.forEach(journal => {
-            journal.createdAt = new Date(journal.createdAt).getTime();
-            journal.updatedAt = new Date(journal.updatedAt).getTime();
-            journal.nonTitleUpdatedAt = new Date(journal.nonTitleUpdatedAt).getTime();
+        const returnValues =  journals.map(journal => {
+            return { ...journal.toObject(),
+                createdAt: new Date(journal.createdAt).getTime(),
+                updatedAt: new Date(journal.updatedAt).getTime(),
+                nonTitleUpdatedAt: new Date(journal.nonTitleUpdatedAt).getTime()
+            };
+            
         });
-        res.status(200).json(journals);
+        res.status(200).json(returnValues);
     } catch (error) {
         console.log("error: ", error);
         res.status(500).json({ message: error.message });
