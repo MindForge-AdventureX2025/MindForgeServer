@@ -53,7 +53,7 @@ export const getChatHistory = async (req, res) => {
         const skip = (page - 1) * limit;
         const chats = await Chat.find({ userId }).
         select("-messages").
-        sort({ updatedAt: -1 }).
+        sort({ nonTitleUpdatedAt: -1 }).
         skip(skip).
         limit(limit);
         if(!chats || chats.length === 0) {

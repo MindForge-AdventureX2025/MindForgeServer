@@ -107,7 +107,7 @@ export const searchJournals = async (req, res) => {
                     { content: new RegExp(keyword, 'i') }
                 ]},
                 { userId: req.user.userId }, // Ensure the search is scoped to the current user
-                { updatedAt: { $gte: from, $lte: to } }, // Filter by date range
+                { nonTitleUpdatedAt: { $gte: from, $lte: to } }, // Filter by date range
                 { tags: { $in: tags ? tags.split(',') : [] } } // Filter by tags if provided
             ]
         }).
@@ -209,7 +209,7 @@ export const getJournalHistory = async (req, res) => {
         const userId = req.user.userId;
         const { limit = 10, page = 1 } = req.query;
         const skip = (page - 1) * limit;
-        const journals = await Journal.find({ userId }).select("-content").sort({ updatedAt: -1 }).skip(skip).limit(limit);
+        const journals = await Journal.find({ userId }).select("-content").sort({ nonTitleUpdatedAt: -1 }).skip(skip).limit(limit);
         if (!journals || journals.length === 0) {
             return res.status(404).json({ message: "No journals found" });
         }
