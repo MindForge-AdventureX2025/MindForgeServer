@@ -6,7 +6,7 @@ export const createJournal = async (req, res) => {
     try {
         const userId = req.user.userId;
         const { title = "untitled", content = "" } = req.body;
-        const newJournal = new Journal({ title, content, userId, nonTitleUpdatedAt: new Date() });
+        let newJournal = new Journal({ title, content, userId, nonTitleUpdatedAt: new Date() });
         await newJournal.save();
         const version = new Version({
             journalId: newJournal._id,
