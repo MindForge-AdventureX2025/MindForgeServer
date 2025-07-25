@@ -1,5 +1,5 @@
 import express from "express";
-import { createChat, getChatById, getChatHistory, updateChat } from "../controllers/chat.controller.js";
+import { createChat, deleteChat, getChatById, getChatHistory, updateChat, updateChatName } from "../controllers/chat.controller.js";
 
 const router = express.Router();
 
@@ -7,5 +7,7 @@ router.get("/:id", getChatById);
 router.get("/", getChatHistory);
 router.post("/", createChat);
 router.put("/:id", updateChat);
+router.post("/rename/:id", updateChatName); // Assuming you have a deleteChat function
+router.delete("/:id", deleteChat); // Assuming you have a deleteChat function
 
 export default router;

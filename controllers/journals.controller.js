@@ -217,3 +217,22 @@ export const getJournalVersions = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 }
+
+export const getJournalHistory = async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const { limit = 10, page = 1 } = req.query;
+        const skip = (page - 1) * limit;
+        const journals = await Journal.find({ userId }).select("-content").sort({ updatedAt: -1 }).skip(skip).limit(limit);
+        if (!journals || journals.length === 0) {
+            return res.status(404).json({ message: "No journals found" });
+        }
+        journals.forEach(journal => {
+            journal.createdAt = new Date(journal.createdAt).getTime();
+            journal.updatedAt = new Date(journal.updatedAt).getTime();
+        });
+        res.status(200).json(journals);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+}

@@ -112,3 +112,45 @@ export const updateChat = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 }
+
+export const updateChatName = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { name } = req.body;
+        const userId = req.user.userId;
+        const chat = await Chat.findById(id);
+        if (!chat) {
+            return res.status(404).json({ message: "Chat not found" });
+        }
+        if (chat.userId !== userId) {
+            return res.status(403).json({ message: "Access denied" });
+        }
+        chat.name = name;
+        await chat.save();
+        res.status(200).json({
+            ...chat.toObject(),
+            createdAt: new Date(chat.createdAt).getTime(),
+            updatedAt: new Date(chat.updatedAt).getTime(),
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+}
+
+export const deleteChat = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const userId = req.user.userId;
+        const chat = await Chat.findById(id);
+        if (!chat) {
+            return res.status(404).json({ message: "Chat not found" });
+        }
+        if (chat.userId !== userId) {
+            return res.status(403).json({ message: "Access denied" });
+        }
+        await Chat.findByIdAndDelete(id);
+        res.status(200).json({ message: "Chat deleted successfully" });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+}
