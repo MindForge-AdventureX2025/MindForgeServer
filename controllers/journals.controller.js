@@ -19,8 +19,6 @@ export const createJournal = async (req, res) => {
         newJournal.updatedAt = new Date().getTime();
         newJournal = {
             ...newJournal.toObject(),
-            createdAt: newJournal.createdAt,
-            updatedAt: newJournal.updatedAt,
             nonTitleUpdatedAt: new Date(newJournal.nonTitleUpdatedAt).getTime(),
         }
         res.status(201).json(newJournal);
