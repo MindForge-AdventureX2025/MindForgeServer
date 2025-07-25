@@ -127,11 +127,7 @@ export const updateChatName = async (req, res) => {
         }
         chat.name = name;
         await chat.save();
-        res.status(200).json({
-            ...chat.toObject(),
-            createdAt: new Date(chat.createdAt).getTime(),
-            updatedAt: new Date(chat.updatedAt).getTime(),
-        });
+        res.status(200).json("Chat name updated successfully");
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
