@@ -1,138 +1,153 @@
-supervisor_agent
-<function>
 {
-    "name": "supervisor_agent", // 这是agent的唯一标识符，其他agent通过此名称调用此功能
-    "description": "分析用户请求并将任务分配给适当的agent，协调多个agent之间的工作流程，确保任务高效完成",
+    "name": "supervisor_agent",// 这是agent的唯一标识符，其他agent通过此名称调用此功能
+    "description": "中央协调器，负责分析用户请求、规划执行流程、分配任务给专业Agent并监督整个工作流程的完成",
     "input": {
-        "user_request": {
+        "user_query": {
             "type": "string",
-            "description": "用户的原始请求文本，包含需要完成的任务描述",
+            "description": "用户的原始查询文本",
             "required": true
         },
-        "available_workers": {
+        "available_agents": {
             "type": "array",
-            "description": "当前系统中可用的worker agent列表",
+            "description": "系统中所有可用agent的完整信息",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "description": "agent的唯一标识符"
+                    },
+                    "description": {
+                        "type": "string",
+                        "description": "agent的功能描述"
+                    "capabilities": {
+                        "type": "array",
+                        "description": "agent的核心能力标签列表"
+                    }
+                }
+            },
+            "required": true
+        },
+        "context": {
+            "type": "object",
+            "description": "当前任务的上下文信息，包括用户历史、系统状态等",
             "required": false
         }
     },
+    "output": {
+        "execution_plan": {
+            "type": "object",
+            "description": "完整的执行计划，包含工作流程和各Agent的调用顺序",
+            "properties": {
+                "workflow": {
+                    "type": "array",
+                    "description": "按执行顺序排列的步骤数组",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "step_id": {
+                                "type": "string",
+                                "description": "步骤的唯一标识符"
+                            },
+                            "agent": {
+                                "type": "string",
+                                "description": "执行此步骤的agent名称"
+                            },
+                            "input": {
+                                "type": "object",
+                                "description": "提供给agent的输入参数"
+                            },
+                            "depends_on": {
+                                "type": "array",
+                                "description": "此步骤依赖的其他步骤ID列表"
+                            }
+                        }
+                    }
+                },
+                "final_integration": {
+                    "type": "object",
+                    "description": "如何整合各步骤结果的说明"
+                }
+            }
+        },
+        "explanation": {
+            "type": "string",
+            "description": "对执行计划的解释，说明为何选择这些agent和此工作流程"
+        }
+    },
     "example": {
         "input": {
-            "user_request": "我需要写一篇关于冥想如何帮助减轻焦虑的情绪日记，并分析我最近一周的情绪状态。",
-            "available_workers": ["search_agent", "summarize_agent", "report_agent"]
+            "user_query": "我需要写一篇关于冥想如何帮助减轻焦虑的情绪日记，并分析我最近一周的情绪状态。",
+            "available_agents": [
+                {
+                    "name": "search_agent",
+                    "description": "搜索相关信息和参考资料",
+                    "capabilities": ["search", "information_retrieval"]
+                },
+                {
+                    "name": "summarize_agent",
+                    "description": "分析日记内容并生成简洁摘要，捕捉核心情绪和主要事件",
+                    "capabilities": ["summarization", "content_analysis"]
+                },
+                {
+                    "name": "emotion_agent",
+                    "description": "分析文本中表达的情绪状态",
+                    "capabilities": ["emotion_analysis", "sentiment_tracking"]
+                },
+                {
+                    "name": "report_agent",
+                    "description": "生成综合数据分析报告",
+                    "capabilities": ["report_generation", "data_visualization"]
+                }
+            ]
+        },
+        "output": {
+            "execution_plan": {
+                "workflow": [
+                    {
+                        "step_id": "step1",
+                        "agent": "search_agent",
+                        "input": {
+                            "query": "冥想如何帮助减轻焦虑",
+                            "result_count": 5
+                        },
+                        "depends_on": []
+                    },
+                    {
+                        "step_id": "step2",
+                        "agent": "emotion_agent",
+                        "input": {
+                            "time_period": "last_week",
+                            "detailed_analysis": true
+                        },
+                        "depends_on": []
+                    },
+                    {
+                        "step_id": "step3",
+                        "agent": "summarize_agent",
+                        "input": {
+                            "content_type": "journal",
+                            "search_results": "{{step1.results}}"
+                        },
+                        "depends_on": ["step1"]
+                    },
+                    {
+                        "step_id": "step4",
+                        "agent": "report_agent",
+                        "input": {
+                            "report_type": "情绪分析与冥想建议报告",
+                            "emotion_data": "{{step2.results}}",
+                            "journal_summary": "{{step3.results}}"
+                        },
+                        "depends_on": ["step2", "step3"]
+                    }
+                ],
+                "final_integration": {
+                    "method": "sequential_presentation",
+                    "sections": ["journal_template", "emotion_analysis", "recommendations"]
+                }
+            },
+            "explanation": "基于用户需求，我设计了四步工作流：首先搜集冥想减轻焦虑的资料，同时分析用户近一周的情绪数据，然后基于搜索结果生成日记模板，最后整合情绪分析和日记内容生成完整报告。"
         }
     }
 }
-</function>
-
-
-//summarize_agent
-< function > {
-    "name": "summarize_agent", // 这是agent的唯一标识符，其他agent通过此名称调用此功能
-    "description": "分析日记内容并生成简洁摘要，捕捉核心情绪和主要事件",
-    "input": {
-        "title": {
-            "type": "string",
-            "description": "日记标题，通常包含日期或主题关键词",
-            "required": true
-        },
-        "content": {
-            "type": "string",
-            "description": "日记正文内容，包含用户的情感表达和事件记录",
-            "required": true
-        },
-    },
-    "example": {
-        "input": {
-            "title": "今天感到焦虑 - 6月15日",
-            "content": "今天早上醒来就感到一阵莫名的焦虑，可能是因为下午有重要的演讲。整个上午都无法集中注意力，一直担心会表现不好。午饭时和Alex聊了聊，他给了我一些建议，让我感觉好了一点。演讲结束后，其实反馈都很正面，我可能总是对自己要求太高了。晚上回家冥想了20分钟，感觉平静了许多。明天要记得对自己更宽容一些。"
-        },
-    },
-} < /function>
-
-//report_agent
-<function>
-{
-    "name": "report_agent", // 这是agent的唯一标识符，其他agent通过此名称调用此功能
-    "description": "生成综合数据分析报告，将原始数据转化为结构化、可读性强的报告文档，包含图表分析和改进建议",
-    "input": {
-        "report_type": {
-            "type": "string",
-            "description": "报告类型，如'情绪分析报告'、'习惯追踪报告'等",
-            "required": true
-        },
-        "data_files": {
-            "type": "array",
-            "description": "需要分析的数据文件列表，包含情绪记录、日记内容等",
-            "required": true
-        }
-    },
-    "example": {
-        "input": {
-            "report_type": "情绪分析月度报告",
-            "data_files": ["emotions_june.json", "journal_entries_june.json"]
-        }
-    }
-}
-</function>
-
-//emotion_agent
-<function>
-{
-    "name": "emotion_agent", // 这是agent的唯一标识符，其他agent通过此名称调用此功能
-    "description": "基于Plutchik情绪轮理论分析文本中表达的情绪，提供八种基本情绪维度的量化评分，帮助理解情感状态的复杂性和强度",
-    "input": {
-        "content": {
-            "type": "string",
-            "description": "需要分析情绪的日记正文或摘要内容",
-            "required": true
-        },
-        "detailed_analysis": {
-            "type": "boolean",
-            "description": "是否提供详细的情绪分析解释",
-            "required": false
-        }
-    },
-    "example": {
-        "input": {
-            "content": "今天早上醒来就感到一阵莫名的焦虑，可能是因为下午有重要的演讲。整个上午都无法集中注意力，一直担心会表现不好。午饭时和Alex聊了聊，他给了我一些建议，让我感觉好了一点。演讲结束后，其实反馈都很正面，我可能总是对自己要求太高了。晚上回家冥想了20分钟，感觉平静了许多。明天要记得对自己更宽容一些。",
-            "detailed_analysis": true
-        }
-    }
-}
-</function>
-
-//topic_agent
-<function>
-{
-    "name": "topic_agent", // 这是agent的唯一标识符，其他agent通过此名称调用此功能
-    "description": "分析文档集合中的主题和关键词，提取重要概念并进行聚类，为词云生成和知识图谱构建提供基础数据",
-    "input": {
-        "documents": {
-            "type": "array",
-            "description": "需要分析的文档集合，可以是多篇日记内容或摘要",
-            "required": true
-        },
-        "time_period": {
-            "type": "string",
-            "description": "分析的时间范围，如'last_week'、'june_2023'等",
-            "required": false
-        },
-        "min_keywords": {
-            "type": "number",
-            "description": "需要提取的最少关键词数量",
-            "required": false
-        }
-    },
-    "example": {
-        "input": {
-            "documents": [
-                "今天早上醒来就感到一阵莫名的焦虑，可能是因为下午有重要的演讲。整个上午都无法集中注意力，一直担心会表现不好。午饭时和Alex聊了聊，他给了我一些建议，让我感觉好了一点。演讲结束后，其实反馈都很正面，我可能总是对自己要求太高了。晚上回家冥想了20分钟，感觉平静了许多。明天要记得对自己更宽容一些。",
-                "今天是休息日，决定去公园散步。阳光明媚，看到很多家庭带着孩子在草地上野餐。不知不觉走了两小时，感觉心情舒畅了很多。回家路上买了些新鲜水果，晚上准备尝试一个新的沙拉食谱。最近养成了每天写日记的习惯，感觉能够更好地整理思绪。",
-                "工作项目今天取得了重大突破，团队终于解决了困扰我们一周的技术问题。虽然过程很艰难，但最终的成功让所有付出都值得。领导对我们的表现非常满意，提到可能会有奖金。晚上和团队一起去庆祝，久违的放松让我意识到需要更多这样的时刻。"
-            ],
-            "time_period": "last_week",
-            "min_keywords": 10
-        }
-    }
-}
-</function>
