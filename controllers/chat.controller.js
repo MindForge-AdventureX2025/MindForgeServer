@@ -1,4 +1,5 @@
 import Chat from "../models/chat.model.js";
+import Journal from "../models/journal.model.js";
 import { query } from "../utils/query.js";
 
 export const createChat = async (req, res) => {
@@ -76,9 +77,19 @@ export const updateChat = async (req, res) => {
             return res.status(404).json({ message: "Chat not found" });
         }
         let resquestMessages = message;
-        if(selected) {
-            resquestMessages += '\nfollowing is the selected context in the journal that I would like to reference:\n' + selected;
+        if(journalIds && journalIds.length > 0) {
+            resquestMessages += '\n\nfollowing is the Journal that I would like to reference: {\n';
+            journalIds.forEach(async journalId => {
+                const { title, content } = await Journal.findById(journalId);
+                resquestMessages += `\n\nJournal Title: ${title}\nJournal Content: ${content}`;
+            });
+            resquestMessages += '\n}';
         }
+        if(selected) {
+            resquestMessages += '\n\nfollowing is the selected context in the journal that I would like to reference (the selected context is what I would like to emphasize. If you need to read something, feel free to read anything I provided with you. But if you need to add, remove, or replace something, that should be inside my selected context.): {\n' + selected + '\n}';
+        }
+        console.log("Request Messages:", resquestMessages);
+        // Assuming query is a function that interacts with an LLM or similar service
         const response = await query(resquestMessages).output_text;
         originalChat.messages.push({
             sender: 'llm',
