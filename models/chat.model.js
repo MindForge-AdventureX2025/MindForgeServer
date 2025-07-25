@@ -10,6 +10,10 @@ const chatSchema = new mongoose.Schema({
         type: String,
         default: "New Chat",
     },
+    nonTitleUpdatedAt: {
+        type: Date,
+        default: Date.now,
+    },
     messages: {
         type: [{
             sender: {

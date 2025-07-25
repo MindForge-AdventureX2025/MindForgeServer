@@ -6,7 +6,7 @@ export const createJournal = async (req, res) => {
     try {
         const userId = req.user.userId;
         const { title = "untitled", content = "" } = req.body;
-        const newJournal = new Journal({ title, content, userId });
+        const newJournal = new Journal({ title, content, userId, nonTitleUpdatedAt: new Date() });
         await newJournal.save();
         const version = new Version({
             journalId: newJournal._id,
@@ -21,6 +21,7 @@ export const createJournal = async (req, res) => {
             ...newJournal.toObject(),
             createdAt: newJournal.createdAt,
             updatedAt: newJournal.updatedAt,
+            nonTitleUpdatedAt: new Date(newJournal.nonTitleUpdatedAt).getTime(),
         }
         res.status(201).json(newJournal);
     } catch (error) {
@@ -72,7 +73,7 @@ export const updateJournal = async (req, res) => {
     try {
         const { id } = req.params;
         const { title, content } = req.body;
-        const updatedJournal = await Journal.findByIdAndUpdate(id, { title, content }, { new: true });
+        const updatedJournal = await Journal.findByIdAndUpdate(id, { title, content, nonTitleUpdatedAt: new Date().getTime() }, { new: true });
         if (!updatedJournal) {
             return res.status(404).json({ message: "Journal not found" });
         }
@@ -222,6 +223,33 @@ export const getJournalHistory = async (req, res) => {
     }
 }
 
+export const setVersionById = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { versionId } = req.body;
+        const journal = await Journal.findById(id);
+        if (!journal) {
+            return res.status(404).json({ message: "Journal not found" });
+        }
+        const version = await Version.findById(versionId);
+        if (!version || version.journalId.toString() !== id) {
+            return res.status(404).json({ message: "Version not found" });
+        }
+        journal.content = version.content;
+        journal.title = version.title;
+        journal.nonTitleUpdatedAt = new Date().getTime();
+        await journal.save();
+        res.status(200).json({
+            ...journal.toObject(),
+            createdAt: new Date(journal.createdAt).getTime(),
+            updatedAt: new Date(journal.updatedAt).getTime(),
+            nonTitleUpdatedAt: new Date(journal.nonTitleUpdatedAt).getTime(),
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+}
+
 export const renameJournal = async (req, res) => {
     try {
         const { id } = req.params;
@@ -235,6 +263,12 @@ export const renameJournal = async (req, res) => {
         }
         journal.title = title;
         await journal.save();
+        await Version.create({
+            journalId: journal._id,
+            userId: req.user.userId,
+            content: journal.content,
+            title: journal.title,
+        });
         res.status(200).json({ message: "Journal renamed successfully", journal });
     } catch (error) {
         res.status(500).json({ message: error.message });

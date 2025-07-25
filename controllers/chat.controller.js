@@ -7,9 +7,12 @@ export const createChat = async (req, res) => {
     try {
         const userId = req.user.userId;
         const newChat = new Chat({ userId });
+        newChat.nonTitleUpdatedAt = new Date();
         await newChat.save();
         newChat.createdAt = new Date(newChat.createdAt).getTime();
         newChat.updatedAt = new Date().getTime();
+        newChat.nonTitleUpdatedAt = new Date(newChat.nonTitleUpdatedAt).getTime();
+        // Add the new chat ID to the user's chatIds array
         await User.findByIdAndUpdate(userId, {
             $push: { chatIds: newChat._id }
         });
