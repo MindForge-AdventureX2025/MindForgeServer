@@ -24,7 +24,7 @@ export const getChatById = async (req, res) => {
         if (!chat) {
             return res.status(404).json({ message: "Chat not found" });
         }
-        if (chat.userId !== userId) {
+        if (chat.userId.toString() !== userId) {
             return res.status(403).json({ message: "Access denied" });
         }
         res.status(200).json({
@@ -122,7 +122,7 @@ export const updateChatName = async (req, res) => {
         if (!chat) {
             return res.status(404).json({ message: "Chat not found" });
         }
-        if (chat.userId !== userId) {
+        if (chat.userId.toString() !== userId) {
             return res.status(403).json({ message: "Access denied" });
         }
         chat.name = name;
