@@ -13,7 +13,7 @@ const versionSchema = new mongoose.Schema({
     },
     content: {
         type: String,
-        required: true,
+        required: false,
     },
     tags:[{
         type: String,
