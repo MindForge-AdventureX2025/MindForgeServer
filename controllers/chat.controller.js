@@ -93,6 +93,20 @@ export const updateChat = async (req, res) => {
     if (!originalChat) {
       res.write(`event: error\ndata: ${JSON.stringify({ error: error.message })}\n\n`);
     }
+    
+    const key = req.user.userId + "_" + id;
+    const data = await redisClient.get(key);
+    let history = [];
+    if (data) {
+      history = JSON.parse(data);
+    }
+    else{
+      history = originalChat.messages.map(msg => ({
+        role: msg.sender,
+        content: msg.content
+      }));
+    }
+
     originalChat.messages.push({
       sender: "user",
       content: message,
@@ -116,11 +130,33 @@ export const updateChat = async (req, res) => {
         selected +
         "\n}";
     }
-    console.log("Request Messages:", requestMessages);
+
+
+    let historyMessages = ""
+    if(history){
+      historyMessages += "\n\nHistory Conversation: " + JSON.stringify(history);
+    }
+
+    console.log("Request Messages:", historyMessages + requestMessages);
 
     // Assuming query is a function that interacts with an LLM or similar service
     // const response = (await query(requestMessages)).output_text;
-    const response = await queryStream(requestMessages, res);
+    const response = await queryStream(historyMessages + requestMessages, res);
+
+    history.push(
+      {
+        role: "user",
+        content: requestMessages,
+      },
+      {
+        role: "llm",
+        content: response,
+      }
+    )
+
+    history.set(key, JSON.stringify(history), {
+      EX: 60 * 60 * 24 // Set expiration to 1 day
+    });
 
     // const response = "你好"
 
