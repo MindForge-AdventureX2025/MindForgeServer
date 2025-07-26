@@ -1,4 +1,4 @@
-import { query, queryStream } from './query.js';
+import { query, queryStream, BackendTools } from './query.js';
 import { createWriteStream } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
@@ -225,6 +225,33 @@ async function main() {
     }
 }
 
+// Test backend tools functionality
+async function testBackendTools() {
+    console.log('\n=== Testing Backend Tools ===');
+    
+    try {
+        const backendTools = new BackendTools();
+        
+        // Test tool descriptions
+        console.log('\n--- Available Tools ---');
+        const tools = backendTools.getAvailableTools();
+        console.log('Journal Tools:', tools.journal_tools);
+        console.log('Chat Tools:', tools.chat_tools);
+        
+        console.log('\n--- Tool Descriptions ---');
+        const descriptions = backendTools.getToolDescriptions();
+        Object.entries(descriptions).slice(0, 5).forEach(([tool, description]) => {
+            console.log(`${tool}: ${description}`);
+        });
+        
+        console.log('\n✅ Backend tools initialized successfully');
+        console.log('📝 Note: Actual API calls require proper authentication and running backend server');
+        
+    } catch (error) {
+        console.error('❌ Error testing backend tools:', error.message);
+    }
+}
+
 // Export functions for programmatic use
 export {
     testQuery,
@@ -232,7 +259,8 @@ export {
     runInteractiveTest,
     runCustomTest,
     saveTestResults,
-    MockResponse
+    MockResponse,
+    testBackendTools
 };
 
 // Run main function if this file is executed directly
