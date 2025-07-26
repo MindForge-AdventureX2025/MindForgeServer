@@ -790,7 +790,7 @@ async function executeAgentWorkflow(userMessage, res, userContext = null) {
         // Step 1: Start with supervisor agent
         res.write(`data: ${JSON.stringify({ 
             status: 'workflow_started', 
-            chunk: '<start>Coordinator analyzing request..</start>.' 
+            chunk: '<start>Coordinator analyzing request...</start>.' 
         })}\n\n`);
         
         let supervisorResponse = await runAgent('supervisor', currentMessage, userContext);
@@ -811,7 +811,7 @@ async function executeAgentWorkflow(userMessage, res, userContext = null) {
             res.write(`data: ${JSON.stringify({ 
                 status: 'iteration', 
                 count: iterationCount,
-                chunk: '<start>Coordinator coordinating tasks..</start>.' 
+                chunk: '<start>Coordinator coordinating tasks...</start>.' 
             })}\n\n`);
             
             // Check if supervisor indicates completion
@@ -829,7 +829,7 @@ async function executeAgentWorkflow(userMessage, res, userContext = null) {
                 res.write(`data: ${JSON.stringify({ 
                     status: 'agent_selected', 
                     agent: getAgentDisplayName(selectedAgent),
-                    chunk: `<start>${getAgentDisplayName(selectedAgent)} processing task..</start>.` 
+                    chunk: `<start>${getAgentDisplayName(selectedAgent)} processing task...</start>.` 
                 })}\n\n`);
                 
                 // Execute the selected agent
@@ -852,7 +852,7 @@ async function executeAgentWorkflow(userMessage, res, userContext = null) {
                 // Step 3: Monitor agent evaluates the response
                 res.write(`data: ${JSON.stringify({ 
                     status: 'monitoring', 
-                    chunk: '<start>Quality Control evaluating response..</start>.' 
+                    chunk: '<start>Quality Control evaluating response...</start>.' 
                 })}\n\n`);
                 
                 const monitorResponse = await runAgent('monitor', 
@@ -879,7 +879,7 @@ async function executeAgentWorkflow(userMessage, res, userContext = null) {
                     res.write(`data: ${JSON.stringify({ 
                         status: 'retry_required', 
                         satisfaction: satisfactionScore,
-                        chunk: '<start>Response quality insufficient, requesting improvement..</start>.' 
+                        chunk: '<start>Response quality insufficient, requesting improvement...</start>.' 
                     })}\n\n`);
                     
                     const improvementFeedback = monitorData?.feedback || 'Please improve the response quality and completeness.';
@@ -1292,7 +1292,7 @@ export const queryStream = async (message, res, userContext = null) => {
         // First, provide the initial response via streaming
         res.write(`data: ${JSON.stringify({ 
             status: 'initial_response_start', 
-            chunk: '<start>Generating initial response..</start>.\n\n' 
+            chunk: '<start>Generating initial response...</start>.\n\n' 
         })}\n\n`);
         
         const stream = await client.chat.completions.create({
@@ -1320,7 +1320,7 @@ export const queryStream = async (message, res, userContext = null) => {
         // Signal completion of initial response
         res.write(`data: ${JSON.stringify({ 
             status: 'initial_response_complete',
-            chunk: '<complete>Initial response completed</complete>.<start>Starting agent workflow..</start>.' 
+            chunk: '<complete>Initial response completed</complete>.<start>Starting agent workflow...</start>.' 
         })}\n\n`);
 
         // After initial response is complete, run the agent workflow
