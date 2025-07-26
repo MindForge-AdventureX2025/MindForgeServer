@@ -86,7 +86,8 @@ export const updateChat = async (req, res) => {
     res.setHeader('Connection', 'keep-alive');          // 保持长连接
     
     const { id } = req.params;
-    const { message, selected = "", journalIds = [] } = req.body;
+    console.log(req.body);
+    const { message, selected = "", journalIds = [] } =  req.body;
     let originalChat = await Chat.findById(id);
     originalChat.messages.push({
       sender: "user",

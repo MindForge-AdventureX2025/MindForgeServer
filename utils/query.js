@@ -65,8 +65,8 @@ export const queryStream = async (message, res) => {
         });
 
         for await (const chunk of stream) {
-            fullText += contentChunk;
             const contentChunk = chunk.choices[0]?.delta?.content || '';
+            fullText += contentChunk;
 
             res.write(`data: ${JSON.stringify({ chunk: contentChunk })}\n\n`);
         }
