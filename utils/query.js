@@ -718,7 +718,7 @@ async function runAgent(agentName, message, userContext = null) {
                 // Quick tool execution (with timeout)
                 if (backendTools && agentResponse.includes('"tool_call"')) {
                     try {
-                        const toolCallMatch = agentResponse.match(/```json\s*(\{[\s\S]*?"tool_call"[\s\S]*?\})\s*```/);
+                        const toolCallMatch = agentResponse.match(/json\s*(\{[\s\S]*?"tool_call"[\s\S]*?\})\s*/);
                         if (toolCallMatch) {
                             const toolCallData = JSON.parse(toolCallMatch[1]);
                             if (toolCallData.tool_call) {
