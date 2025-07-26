@@ -1046,6 +1046,12 @@ async function runAgent(agentName, message, userContext = null, cleanForBackend 
 
         // Add tool information to agent prompt (agent-specific tools)
         let enhancedPrompt = agentPrompt;
+        
+        // Add universal language compliance instruction
+        enhancedPrompt += `\n\n## CRITICAL LANGUAGE REQUIREMENT\n`;
+        enhancedPrompt += `**ALL low-level system output tags (<thinking>, <start>, <complete>, <e>, etc.) MUST ALWAYS be in English, never translated, regardless of user's language.**\n`;
+        enhancedPrompt += `**User-facing content can be in the user's language, but system tags must remain English-only for technical compatibility.**\n\n`;
+        
         if (backendTools) {
             const toolDescriptions = backendTools.getToolDescriptions();
             const availableTools = backendTools.getAvailableTools();
@@ -1113,13 +1119,14 @@ async function runAgent(agentName, message, userContext = null, cleanForBackend 
             
             enhancedPrompt += `**Tool Usage Format (REQUIRED)**: \`\`\`json\n{"tool_call": {"tool": "tool_name", "params": {...}}}\`\`\`\n\n`;
             enhancedPrompt += `**UNIVERSAL RESPONSE REQUIREMENTS:**\n`;
-            enhancedPrompt += `1. Execute tools immediately when needed - don't ask permission\n`;
-            enhancedPrompt += `2. Keep ALL responses concise: maximum 50 words\n`;
-            enhancedPrompt += `3. Focus on actions taken, not suggestions or possibilities\n`;
-            enhancedPrompt += `4. Report concrete results from tool execution\n`;
-            enhancedPrompt += `5. Use active voice: "Added tags: #python #machine-learning" not "You could add tags"\n`;
-            enhancedPrompt += `6. When mentioning tags, format as: #tagname NOT 'tagname' or \`tagname\`\n`;
-            enhancedPrompt += `7. Example: "Added tags: #python #machine-learning #tensorflow" (no quotes or backticks)\n\n`;
+            enhancedPrompt += `1. LANGUAGE COMPLIANCE: System tags (<thinking>, <start>, <complete>, <e>) MUST be English-only, NEVER translated\n`;
+            enhancedPrompt += `2. Execute tools immediately when needed - don't ask permission\n`;
+            enhancedPrompt += `3. Keep ALL responses concise: maximum 50 words\n`;
+            enhancedPrompt += `4. Focus on actions taken, not suggestions or possibilities\n`;
+            enhancedPrompt += `5. Report concrete results from tool execution\n`;
+            enhancedPrompt += `6. Use active voice: "Added tags: #python #machine-learning" not "You could add tags"\n`;
+            enhancedPrompt += `7. When mentioning tags, format as: #tagname NOT 'tagname' or \`tagname\`\n`;
+            enhancedPrompt += `8. Example: "Added tags: #python #machine-learning #tensorflow" (no quotes or backticks)\n\n`;
         }
         
         // Implement retry mechanism with timeout and optimization
@@ -1177,7 +1184,7 @@ async function runAgent(agentName, message, userContext = null, cleanForBackend 
                                     messages: [
                                         {
                                             role: "system",
-                                            content: "Provide a brief response based on the tool result. Maximum 50 words. Focus on what was accomplished."
+                                            content: "Provide a brief response based on the tool result. Maximum 50 words. Focus on what was accomplished. IMPORTANT: All system tags (<thinking>, <start>, <complete>, <e>) must be in English only."
                                         },
                                         {
                                             role: "user",
@@ -1259,12 +1266,14 @@ async function runAgent(agentName, message, userContext = null, cleanForBackend 
 
 // Direct LLM response for fallback
 async function directLLMResponse(message) {
+    const enhancedSystemPrompt = data + `\n\n## CRITICAL LANGUAGE REQUIREMENT\n**ALL low-level system output tags (<thinking>, <start>, <complete>, <e>, etc.) MUST ALWAYS be in English, never translated, regardless of user's language.**\n**User-facing content can be in the user's language, but system tags must remain English-only for technical compatibility.**`;
+    
     const response = await client.chat.completions.create({
         model: process.env.LLM || "kimi-k2-0711-preview",
         messages: [
             {
                 role: "system",
-                content: data
+                content: enhancedSystemPrompt
             },
             {
                 role: "user",
@@ -1280,12 +1289,14 @@ async function directLLMResponse(message) {
 export const query = async (message, userContext = null) => {
     try {
         // Step 1: Get initial LLM response (same logic as queryStream but without streaming)
+        const enhancedSystemPrompt = data + `\n\n## CRITICAL LANGUAGE REQUIREMENT\n**ALL low-level system output tags (<thinking>, <start>, <complete>, <e>, etc.) MUST ALWAYS be in English, never translated, regardless of user's language.**\n**User-facing content can be in the user's language, but system tags must remain English-only for technical compatibility.**`;
+        
         const response = await client.chat.completions.create({
             model: process.env.LLM || "kimi-k2-0711-preview",
             messages: [
                 {
                     role: "system",
-                    content: data
+                    content: enhancedSystemPrompt
                 },
                 {
                     role: "user",
@@ -1336,12 +1347,14 @@ export const queryStream = async (message, res, userContext = null) => {
             chunk: '<start>Generating initial response...</start> \n\n' 
         })}\n\n`);
         
+        const enhancedSystemPrompt = data + `\n\n## CRITICAL LANGUAGE REQUIREMENT\n**ALL low-level system output tags (<thinking>, <start>, <complete>, <e>, etc.) MUST ALWAYS be in English, never translated, regardless of user's language.**\n**User-facing content can be in the user's language, but system tags must remain English-only for technical compatibility.**`;
+        
         const stream = await client.chat.completions.create({
             model: process.env.LLM || "kimi-k2-0711-preview",
             messages: [
                 {
                     role: "system",
-                    content: data
+                    content: enhancedSystemPrompt
                 },
                 {
                     role: "user",
