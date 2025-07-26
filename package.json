@@ -20,6 +20,7 @@
   },
   "dependencies": {
     "@clerk/express": "^1.7.11",
+    "@openai/agents": "^0.0.13",
     "@prisma/client": "^6.12.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.0",
