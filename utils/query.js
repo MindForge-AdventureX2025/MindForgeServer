@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import { readFile } from "fs/promises";
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
+import { run } from "@openai/agents";
 
 dotenv.config();
 

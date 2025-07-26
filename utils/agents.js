@@ -19,6 +19,7 @@ const supervisorInstructions = await readFile(join(__dirname, "..", "prompts", "
 const retrievalInstructions = await readFile(join(__dirname, "..", "prompts", "retrieval.md"), "utf-8");
 const summarizationInstructions = await readFile(join(__dirname, "..", "prompts", "summarization.md"), "utf-8");
 const tagsInstructions = await readFile(join(__dirname, "..", "prompts", "tags.md"), "utf-8");
+const emotionInstructions = await readFile(join(__dirname, "..", "prompts", "emotion.md"), "utf-8");
 const enhancementInstructions = await readFile(join(__dirname, "..", "prompts", "enhancement.md"), "utf-8");
 const memoryInstructions = await readFile(join(__dirname, "..", "prompts", "memory.md"), "utf-8");
 const reportInstructions = await readFile(join(__dirname, "..", "prompts", "report.md"), "utf-8");
@@ -39,6 +40,12 @@ export const retrieval_agent = new Agent({
 export const summarization_agent = new Agent({
     name: 'summarization',
     instructions: summarizationInstructions || 'only output what you received and your name',
+    model: 'kimi-k2-0711-preview',
+})
+
+export const emotion_agent = new Agent({
+    name: 'emotion',
+    instructions: emotionInstructions || 'only output what you received and your name',
     model: 'kimi-k2-0711-preview',
 })
 
