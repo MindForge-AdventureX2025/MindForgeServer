@@ -33,7 +33,7 @@ export const query = async (message) => {
                 }
             ],
             temperature: 0.7,
-            max_tokens: 1024,
+            // max_tokens: 1024,
         });
         return {
             output_text: response.choices[0].message.content
@@ -60,7 +60,7 @@ export const queryStream = async (message, res) => {
                 }
             ],
             temperature: 0.7,
-            max_tokens: 1024,
+            // max_tokens: 1024,
             stream: true
         });
 
