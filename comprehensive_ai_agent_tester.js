@@ -2,7 +2,18 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 import axios from 'axios';
-import { query } from './utils/query.js';
+import OpenAI from "openai";
+import { readFile } from "fs/promises";
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+const client = new OpenAI({
+    apiKey: process.env.MOONSHOT_API_KEY,
+    baseURL: process.env.MOONSHOT_BASE_URL || "https://api.moonshot.cn/v1"
+});
 
 /**
  * COMPREHENSIVE AI AGENT TESTING SUITE
@@ -395,21 +406,62 @@ class ComprehensiveAIAgentTester {
     }
 
     async testAgentGeneration(agentName, testCase) {
-        const response = await query(
-            testCase.message,
-            this.testUserId,
-            null, // No chat ID for testing
-            {
-                forceAgent: agentName,
-                testMode: true
-            }
-        );
+        // Load the prompt for the specific agent
+        const promptMap = {
+            'emotion_agent': 'emotion_nextgen.md',
+            'tags_agent': 'tags_nextgen.md', 
+            'memory_agent': 'memory_nextgen.md',
+            'supervisor_agent': 'supervisor_nextgen.md'
+        };
 
-        if (!response || !response.message) {
-            throw new Error(`${agentName} failed to generate response`);
+        const promptFile = promptMap[agentName];
+        if (!promptFile) {
+            throw new Error(`No prompt file found for agent ${agentName}`);
         }
 
-        return response;
+        // Read the prompt
+        const promptPath = join(__dirname, "prompts", promptFile);
+        let promptContent;
+        try {
+            promptContent = await readFile(promptPath, "utf-8");
+        } catch (error) {
+            // Fallback to regular prompt if nextgen doesn't exist
+            const fallbackFile = promptFile.replace('_nextgen', '');
+            const fallbackPath = join(__dirname, "prompts", fallbackFile);
+            promptContent = await readFile(fallbackPath, "utf-8");
+        }
+
+        if (!promptContent) {
+            throw new Error(`Could not load prompt for ${agentName}`);
+        }
+
+        // Call the LLM with the agent's prompt
+        const response = await client.chat.completions.create({
+            model: process.env.LLM || "kimi-k2-0711-preview",
+            messages: [
+                {
+                    role: "system",
+                    content: promptContent
+                },
+                {
+                    role: "user", 
+                    content: testCase.message
+                }
+            ],
+            temperature: 0.7,
+        });
+
+        const content = response.choices[0].message.content;
+
+        if (!content) {
+            throw new Error(`${agentName} generated empty response`);
+        }
+
+        return {
+            message: content,
+            agent: agentName,
+            rawResponse: response
+        };
     }
 
     analyzeResponseQuality(response, expectedElements) {

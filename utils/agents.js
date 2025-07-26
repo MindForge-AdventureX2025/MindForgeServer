@@ -15,6 +15,10 @@ const client = new OpenAI({
     baseURL: process.env.MOONSHOT_BASE_URL || "https://api.moonshot.cn/v1"
 });
 
+// Set OpenAI API key for agents (use Moonshot key)
+process.env.OPENAI_API_KEY = process.env.MOONSHOT_API_KEY;
+process.env.OPENAI_BASE_URL = process.env.MOONSHOT_BASE_URL;
+
 const supervisorInstructions = await readFile(join(__dirname, "..", "prompts", "supervisor.md"), "utf-8");
 const retrievalInstructions = await readFile(join(__dirname, "..", "prompts", "retrieval.md"), "utf-8");
 const summarizationInstructions = await readFile(join(__dirname, "..", "prompts", "summarization.md"), "utf-8");
