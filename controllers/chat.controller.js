@@ -137,10 +137,6 @@ export const updateChat = async (req, res) => {
       historyMessages += "\n\nHistory Conversation: " + JSON.stringify(history);
     }
 
-    console.log("Request Messages:", historyMessages + requestMessages);
-
-    // Assuming query is a function that interacts with an LLM or similar service
-    // const response = (await query(requestMessages)).output_text;
     const response = await queryStream(historyMessages + requestMessages, res);
 
     history.push(
@@ -154,11 +150,9 @@ export const updateChat = async (req, res) => {
       }
     )
 
-    history.set(key, JSON.stringify(history), {
+    await redisClient.set(key, JSON.stringify(history), {
       EX: 60 * 60 * 24 // Set expiration to 1 day
     });
-
-    // const response = "你好"
 
     originalChat.messages.push({
       sender: "llm",
