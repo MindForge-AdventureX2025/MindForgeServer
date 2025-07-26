@@ -1296,7 +1296,7 @@ export const queryStream = async (message, res, userContext = null) => {
     } catch (error) {
         console.error("Error in queryStream function:", error);
         res.write(`event: error\ndata: ${JSON.stringify({ chunk: error.message })}\n\n`);
-        return "An error occurred while processing your request.";
+        return "An error occurred while processing your request due to API rate limit. Please try again in 1 minute.";
     }
 };
 
