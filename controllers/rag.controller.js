@@ -137,12 +137,22 @@ export const updateMemory = async (req, res) => {
         delete updateData.createdAt;
         delete updateData.updatedAt;
 
+        // Handle metadata updates properly
+        const updateFields = { ...updateData };
+        if (updateData.metadata) {
+            // Update individual metadata fields to avoid conflicts
+            Object.keys(updateData.metadata).forEach(key => {
+                updateFields[`metadata.${key}`] = updateData.metadata[key];
+            });
+            delete updateFields.metadata;
+        }
+
+        // Always update lastAccessedAt
+        updateFields['metadata.lastAccessedAt'] = new Date();
+
         const memory = await Rag.findOneAndUpdate(
             { _id: id, userId },
-            { 
-                ...updateData,
-                'metadata.lastAccessedAt': new Date()
-            },
+            updateFields,
             { new: true }
         );
 

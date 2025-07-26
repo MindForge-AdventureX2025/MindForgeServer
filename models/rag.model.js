@@ -25,7 +25,7 @@ const ragSchema = new mongoose.Schema({
     metadata: {
         sourceType: {
             type: String,
-            enum: ['journal', 'chat', 'agent_analysis', 'user_input'],
+            enum: ['journal', 'chat', 'agent_analysis', 'user_input', 'api_test'],
             required: true
         },
         sourceId: {
