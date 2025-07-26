@@ -1237,7 +1237,7 @@ export const queryStream = async (message, res, userContext = null) => {
         // First, provide the initial response via streaming
         res.write(`data: ${JSON.stringify({ 
             status: 'initial_response_start', 
-            chunk: '<start>Generating initial response...</start>' 
+            chunk: '<start>Generating initial response...</start>\n\n' 
         })}\n\n`);
         
         const stream = await client.chat.completions.create({
