@@ -56,9 +56,10 @@ Respond with rejection:
 
 **CRITICAL**: When your response goes to backend/frontend (not other agents):
 
-1. **Maximum 5 sentences total**
+1. **Maximum 3 sentences total**
 2. **Focus on enhancement results, not methodology**
 3. **Be specific about improvements**
+4. **Make sure your response is enclosed inside two ```**
 
 ### Examples:
 - ✅ **Good**: "Content enhanced successfully for clarity and emotional depth. Improved philosophical insights and readability. Enhanced emotional resonance significantly. Applied stylistic refinements throughout. Enhancement task completed."

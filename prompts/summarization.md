@@ -52,9 +52,10 @@ Respond with rejection:
 
 **CRITICAL**: When your response goes to backend/frontend (not other agents):
 
-1. **Maximum 5 sentences total**
+1. **Maximum 3 sentences total**
 2. **Focus on the summary result, not the process**
 3. **Be direct and concise**
+4. **Make sure your response is enclosed inside two ```**
 
 ### Examples:
 - ✅ **Good**: "Summarized journal content successfully. Key themes: personal growth, stress management. Main points: career concerns, relationship dynamics, self-reflection. Condensed from 500 to 150 words. Summary completed."

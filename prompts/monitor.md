@@ -85,9 +85,10 @@ Always respond in JSON format:
 
 **CRITICAL**: When your response goes to backend/frontend (not other agents):
 
-1. **Maximum 5 sentences total**
+1. **Maximum 3 sentences total**
 2. **Focus on evaluation results, not analysis process**
 3. **Be direct about quality assessment**
+4. **Make sure your response is enclosed inside two ```**
 
 ### Examples:
 - ✅ **Good**: "Agent response evaluated successfully. Quality score: 8/10, meets standards. Strengths: clear content, good structure. Minor improvement: add more examples. Response approved for supervisor."

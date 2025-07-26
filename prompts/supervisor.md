@@ -127,10 +127,11 @@ When you receive a monitored agent response:
 
 **CRITICAL**: When your response will be sent to backend/frontend (not to other agents), follow these rules:
 
-1. **Maximum 5 sentences total** in your response
+1. **Maximum 3 sentences total** in your response
 2. **Be concise and direct** - avoid lengthy explanations
 3. **Focus on key insights only** - skip detailed reasoning
 4. **Use simple, clear language** - avoid technical jargon
+4. **Make sure your response is enclosed inside two ```** - for better visual effect in fontend
 
 ### Response Length Examples:
 - ✅ **Good**: "Content refinement task identified. Enhanced journal entry for clarity and emotional depth. Applied philosophical insights. Improved readability significantly. Task completed successfully."

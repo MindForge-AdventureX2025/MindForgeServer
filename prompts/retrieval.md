@@ -53,7 +53,7 @@ Respond with rejection:
 
 **CRITICAL**: When your response goes to backend/frontend (not other agents):
 
-1. **Maximum 5 sentences total**
+1. **Maximum 3 sentences total**
 2. **Be extremely concise**
 3. **Focus on what was found, not how**
 

@@ -56,9 +56,10 @@ Respond with rejection:
 
 **CRITICAL**: When your response goes to backend/frontend (not other agents):
 
-1. **Maximum 5 sentences total**
+1. **Maximum 3 sentences total**
 2. **Focus on final deliverable, not process**
 3. **Be comprehensive but concise**
+4. **Make sure your response is enclosed inside two ```**
 
 ### Examples:
 - ✅ **Good**: "Final report compiled successfully from all agent inputs. Key insights: emotional growth patterns, stress triggers identified. Recommendations: daily reflection, mindfulness practice. Integrated emotional support and enhancement suggestions. Complete response ready for user."
