@@ -237,6 +237,7 @@ async function testBackendTools() {
         const tools = backendTools.getAvailableTools();
         console.log('Journal Tools:', tools.journal_tools);
         console.log('Chat Tools:', tools.chat_tools);
+        console.log('Memory Tools:', tools.memory_tools);
         
         console.log('\n--- Tool Descriptions ---');
         const descriptions = backendTools.getToolDescriptions();

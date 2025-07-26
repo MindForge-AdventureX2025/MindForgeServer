@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import journalsRoutes from './routes/journals.routes.js';
 import chatsRoutes from './routes/chats.routes.js';
+import ragRoutes from './routes/rag.routes.js';
 import { clerkMiddleware } from '@clerk/express';
 
 dotenv.config();
@@ -26,6 +27,7 @@ app.use(syncUser); // Middleware to sync user data
 
 app.use('/api/journals', journalsRoutes);
 app.use('/api/chats', chatsRoutes);
+app.use('/api/rag', ragRoutes);
 
 const PORT = process.env.PORT || 3000;
 

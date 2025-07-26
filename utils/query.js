@@ -221,6 +221,116 @@ class BackendTools {
         }
     }
 
+    // RAG Memory API Tools
+    async createMemory(memoryType, title, content, metadata = {}, tags = []) {
+        try {
+            const response = await this.axiosInstance.post('/api/rag', {
+                memoryType,
+                title,
+                content,
+                metadata,
+                tags
+            });
+            return { success: true, data: response.data };
+        } catch (error) {
+            return { success: false, error: error.response?.data?.message || error.message };
+        }
+    }
+
+    async getUserMemories(memoryType = null, limit = 50, page = 1, sortBy = 'relevanceScore') {
+        try {
+            const params = { limit, page, sortBy };
+            if (memoryType) params.memoryType = memoryType;
+            
+            const response = await this.axiosInstance.get('/api/rag', { params });
+            return { success: true, data: response.data };
+        } catch (error) {
+            return { success: false, error: error.response?.data?.message || error.message };
+        }
+    }
+
+    async getMemoryById(id) {
+        try {
+            const response = await this.axiosInstance.get(`/api/rag/${id}`);
+            return { success: true, data: response.data };
+        } catch (error) {
+            return { success: false, error: error.response?.data?.message || error.message };
+        }
+    }
+
+    async updateMemory(id, updateData) {
+        try {
+            const response = await this.axiosInstance.put(`/api/rag/${id}`, updateData);
+            return { success: true, data: response.data };
+        } catch (error) {
+            return { success: false, error: error.response?.data?.message || error.message };
+        }
+    }
+
+    async searchMemories(query, memoryType = null, tags = null, limit = 20, minRelevance = 0.3) {
+        try {
+            const params = { query, limit, minRelevance };
+            if (memoryType) params.memoryType = memoryType;
+            if (tags) params.tags = tags;
+            
+            const response = await this.axiosInstance.get('/api/rag/search', { params });
+            return { success: true, data: response.data };
+        } catch (error) {
+            return { success: false, error: error.response?.data?.message || error.message };
+        }
+    }
+
+    async getMemoriesByType(type, limit = 50, page = 1) {
+        try {
+            const response = await this.axiosInstance.get(`/api/rag/type/${type}`, {
+                params: { limit, page }
+            });
+            return { success: true, data: response.data };
+        } catch (error) {
+            return { success: false, error: error.response?.data?.message || error.message };
+        }
+    }
+
+    async addTagsToMemory(id, tags) {
+        try {
+            const response = await this.axiosInstance.post(`/api/rag/${id}/tags`, { tags });
+            return { success: true, data: response.data };
+        } catch (error) {
+            return { success: false, error: error.response?.data?.message || error.message };
+        }
+    }
+
+    async removeTagsFromMemory(id, tags) {
+        try {
+            const response = await this.axiosInstance.delete(`/api/rag/${id}/tags`, { 
+                data: { tags }
+            });
+            return { success: true, data: response.data };
+        } catch (error) {
+            return { success: false, error: error.response?.data?.message || error.message };
+        }
+    }
+
+    async deleteMemory(id, permanent = false) {
+        try {
+            const response = await this.axiosInstance.delete(`/api/rag/${id}`, {
+                params: { permanent }
+            });
+            return { success: true, data: response.data };
+        } catch (error) {
+            return { success: false, error: error.response?.data?.message || error.message };
+        }
+    }
+
+    async getMemoryStats() {
+        try {
+            const response = await this.axiosInstance.get('/api/rag/stats');
+            return { success: true, data: response.data };
+        } catch (error) {
+            return { success: false, error: error.response?.data?.message || error.message };
+        }
+    }
+
     // Tool execution function for AI agents
     async executeTool(toolName, params) {
         switch (toolName) {
@@ -260,6 +370,28 @@ class BackendTools {
             case 'delete_chat':
                 return await this.deleteChat(params.id);
             
+            // RAG Memory tools
+            case 'create_memory':
+                return await this.createMemory(params.memoryType, params.title, params.content, params.metadata, params.tags);
+            case 'get_user_memories':
+                return await this.getUserMemories(params.memoryType, params.limit, params.page, params.sortBy);
+            case 'get_memory':
+                return await this.getMemoryById(params.id);
+            case 'update_memory':
+                return await this.updateMemory(params.id, params.updateData);
+            case 'search_memories':
+                return await this.searchMemories(params.query, params.memoryType, params.tags, params.limit, params.minRelevance);
+            case 'get_memories_by_type':
+                return await this.getMemoriesByType(params.type, params.limit, params.page);
+            case 'add_memory_tags':
+                return await this.addTagsToMemory(params.id, params.tags);
+            case 'remove_memory_tags':
+                return await this.removeTagsFromMemory(params.id, params.tags);
+            case 'delete_memory':
+                return await this.deleteMemory(params.id, params.permanent);
+            case 'get_memory_stats':
+                return await this.getMemoryStats();
+            
             default:
                 return { success: false, error: `Unknown tool: ${toolName}` };
         }
@@ -287,6 +419,18 @@ class BackendTools {
                 'get_chat_history', 
                 'update_chat_name',
                 'delete_chat'
+            ],
+            memory_tools: [
+                'create_memory',
+                'get_user_memories',
+                'get_memory',
+                'update_memory',
+                'search_memories',
+                'get_memories_by_type',
+                'add_memory_tags',
+                'remove_memory_tags',
+                'delete_memory',
+                'get_memory_stats'
             ]
         };
     }
@@ -312,7 +456,19 @@ class BackendTools {
             get_chat: "Get a specific chat by ID. Params: {id: string}",
             get_chat_history: "Get user's chat history. Params: {limit?: number, page?: number}",
             update_chat_name: "Update chat name. Params: {id: string, name: string}",
-            delete_chat: "Delete a chat. Params: {id: string}"
+            delete_chat: "Delete a chat. Params: {id: string}",
+            
+            // Memory/RAG tools
+            create_memory: "Create a new memory entry. Params: {memoryType: string, title: string, content: string, metadata?: object, tags?: string[]}",
+            get_user_memories: "Get all user memories. Params: {memoryType?: string, limit?: number, page?: number, sortBy?: string}",
+            get_memory: "Get a specific memory by ID. Params: {id: string}",
+            update_memory: "Update an existing memory. Params: {id: string, updateData: object}",
+            search_memories: "Search memories by query. Params: {query: string, memoryType?: string, tags?: string, limit?: number, minRelevance?: number}",
+            get_memories_by_type: "Get memories by type. Params: {type: string, limit?: number, page?: number}",
+            add_memory_tags: "Add tags to a memory. Params: {id: string, tags: string[]}",
+            remove_memory_tags: "Remove tags from a memory. Params: {id: string, tags: string[]}",
+            delete_memory: "Delete a memory. Params: {id: string, permanent?: boolean}",
+            get_memory_stats: "Get memory statistics for user. Params: {}"
         };
     }
 }
@@ -512,6 +668,11 @@ async function runAgent(agentName, message, userContext = null) {
             
             enhancedPrompt += `\n### Chat Tools:\n`;
             availableTools.chat_tools.forEach(tool => {
+                enhancedPrompt += `- **${tool}**: ${toolDescriptions[tool]}\n`;
+            });
+            
+            enhancedPrompt += `\n### Memory/RAG Tools:\n`;
+            availableTools.memory_tools.forEach(tool => {
                 enhancedPrompt += `- **${tool}**: ${toolDescriptions[tool]}\n`;
             });
             
