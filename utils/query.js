@@ -626,8 +626,11 @@ async function executeAgentWorkflow(userMessage, res, userContext = null) {
     }
 }
 
-// Helper function to run individual agents
+// Helper function to run individual agents with performance optimizations
 async function runAgent(agentName, message, userContext = null) {
+    const AGENT_TIMEOUT = 8000; // 8 seconds max per agent
+    const MAX_RETRIES = 2;
+    
     try {
         const agent = agents[agentName];
         if (!agent) {
@@ -642,8 +645,7 @@ async function runAgent(agentName, message, userContext = null) {
             }
         }
         
-        // For now, we'll simulate agent execution using direct LLM calls with agent-specific prompts
-        // In a full implementation, this would use the actual agent framework
+        // Load agent-specific prompts
         const agentPromptPath = join(__dirname, "..", "prompts", `${agentName}.md`);
         let agentPrompt;
         
@@ -653,101 +655,116 @@ async function runAgent(agentName, message, userContext = null) {
             agentPrompt = `You are the ${agentName} agent. Process the following request according to your role.`;
         }
 
-        // Add tool information to agent prompt
+        // Add tool information to agent prompt (optimized)
         let enhancedPrompt = agentPrompt;
         if (backendTools) {
             const toolDescriptions = backendTools.getToolDescriptions();
             const availableTools = backendTools.getAvailableTools();
             
-            enhancedPrompt += `\n\n## Available Backend Tools\n\nYou have access to the following backend API tools:\n\n`;
+            enhancedPrompt += `\n\n## Available Tools:\n`;
             
-            enhancedPrompt += `### Journal Tools:\n`;
-            availableTools.journal_tools.forEach(tool => {
-                enhancedPrompt += `- **${tool}**: ${toolDescriptions[tool]}\n`;
-            });
+            // Simplified tool list for faster processing
+            enhancedPrompt += `**Journal**: create_journal, get_journal, search_journals, update_journal\n`;
+            enhancedPrompt += `**Memory**: create_memory, search_memories, get_user_memories, update_memory\n`;
+            enhancedPrompt += `**Chat**: create_chat, get_chat_history\n\n`;
             
-            enhancedPrompt += `\n### Chat Tools:\n`;
-            availableTools.chat_tools.forEach(tool => {
-                enhancedPrompt += `- **${tool}**: ${toolDescriptions[tool]}\n`;
-            });
-            
-            enhancedPrompt += `\n### Memory/RAG Tools:\n`;
-            availableTools.memory_tools.forEach(tool => {
-                enhancedPrompt += `- **${tool}**: ${toolDescriptions[tool]}\n`;
-            });
-            
-            enhancedPrompt += `\n### Tool Usage Format:\nTo use a tool, include in your response:\n\`\`\`json\n{\n  "tool_call": {\n    "tool": "tool_name",\n    "params": {\n      "param1": "value1",\n      "param2": "value2"\n    }\n  }\n}\n\`\`\`\n\nThe tool execution result will be provided to you, and you can then formulate your response based on the data returned.\n\n`;
+            enhancedPrompt += `**Tool Usage**: \`\`\`json\n{"tool_call": {"tool": "tool_name", "params": {...}}}\`\`\`\n\n`;
         }
         
-        const response = await client.chat.completions.create({
-            model: process.env.LLM || "kimi-k2-0711-preview",
-            messages: [
-                {
-                    role: "system",
-                    content: enhancedPrompt
-                },
-                {
-                    role: "user",
-                    content: message
-                }
-            ],
-            temperature: 0.7,
-        });
-        
-        let agentResponse = response.choices[0].message.content;
-        
-        // Check if agent wants to use tools
-        if (backendTools && agentResponse.includes('"tool_call"')) {
+        // Implement retry mechanism with timeout and optimization
+        for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
             try {
-                // Extract tool call from response
-                const toolCallMatch = agentResponse.match(/```json\s*(\{[\s\S]*?"tool_call"[\s\S]*?\})\s*```/);
-                if (toolCallMatch) {
-                    const toolCallData = JSON.parse(toolCallMatch[1]);
-                    if (toolCallData.tool_call) {
-                        const toolResult = await backendTools.executeTool(
-                            toolCallData.tool_call.tool, 
-                            toolCallData.tool_call.params
-                        );
-                        
-                        // Send tool result back to agent for final response
-                        const followUpResponse = await client.chat.completions.create({
-                            model: process.env.LLM || "kimi-k2-0711-preview",
-                            messages: [
-                                {
-                                    role: "system",
-                                    content: enhancedPrompt
-                                },
-                                {
-                                    role: "user",
-                                    content: message
-                                },
-                                {
-                                    role: "assistant", 
-                                    content: agentResponse
-                                },
-                                {
-                                    role: "user",
-                                    content: `Tool execution result: ${JSON.stringify(toolResult)}\n\nPlease provide your final response based on this data.`
-                                }
-                            ],
-                            temperature: 0.7,
-                        });
-                        
-                        agentResponse = followUpResponse.choices[0].message.content;
+                const responsePromise = client.chat.completions.create({
+                    model: process.env.LLM || "kimi-k2-0711-preview",
+                    messages: [
+                        {
+                            role: "system",
+                            content: enhancedPrompt
+                        },
+                        {
+                            role: "user",
+                            content: message
+                        }
+                    ],
+                    temperature: 0.6, // Slightly lower for consistency
+                    max_tokens: 500, // Optimized for faster response
+                });
+
+                const timeoutPromise = new Promise((_, reject) => {
+                    setTimeout(() => reject(new Error(`Agent ${agentName} timeout after ${AGENT_TIMEOUT}ms`)), AGENT_TIMEOUT);
+                });
+
+                const response = await Promise.race([responsePromise, timeoutPromise]);
+                let agentResponse = response.choices[0].message.content;
+                
+                // Quick tool execution (with timeout)
+                if (backendTools && agentResponse.includes('"tool_call"')) {
+                    try {
+                        const toolCallMatch = agentResponse.match(/```json\s*(\{[\s\S]*?"tool_call"[\s\S]*?\})\s*```/);
+                        if (toolCallMatch) {
+                            const toolCallData = JSON.parse(toolCallMatch[1]);
+                            if (toolCallData.tool_call) {
+                                // Execute tool with timeout
+                                const toolPromise = backendTools.executeTool(
+                                    toolCallData.tool_call.tool, 
+                                    toolCallData.tool_call.params
+                                );
+                                const toolTimeoutPromise = new Promise((_, reject) => {
+                                    setTimeout(() => reject(new Error('Tool timeout')), 5000);
+                                });
+                                
+                                const toolResult = await Promise.race([toolPromise, toolTimeoutPromise]);
+                                
+                                // Quick follow-up response
+                                const followUpPromise = client.chat.completions.create({
+                                    model: process.env.LLM || "kimi-k2-0711-preview",
+                                    messages: [
+                                        {
+                                            role: "system",
+                                            content: "Provide a brief response based on the tool result."
+                                        },
+                                        {
+                                            role: "user",
+                                            content: `Tool result: ${JSON.stringify(toolResult)}\n\nBrief response (max 50 words):`
+                                        }
+                                    ],
+                                    temperature: 0.6,
+                                    max_tokens: 200,
+                                });
+                                
+                                const followUpTimeoutPromise = new Promise((_, reject) => {
+                                    setTimeout(() => reject(new Error('Follow-up timeout')), 5000);
+                                });
+                                
+                                const followUpResponse = await Promise.race([followUpPromise, followUpTimeoutPromise]);
+                                agentResponse = followUpResponse.choices[0].message.content;
+                            }
+                        }
+                    } catch (toolError) {
+                        console.error(`Tool execution error for ${agentName}:`, toolError);
+                        // Continue with original response
                     }
                 }
-            } catch (toolError) {
-                console.error(`Tool execution error for ${agentName}:`, toolError);
-                // Continue with original response if tool execution fails
+                
+                // Wrap response in triple backticks for frontend formatting
+                return `\`\`\`\n${agentResponse}\n\`\`\``;
+                
+            } catch (error) {
+                console.error(`Agent ${agentName} attempt ${attempt} failed:`, error.message);
+                
+                if (attempt === MAX_RETRIES) {
+                    // Final attempt failed, return optimized fallback response
+                    return `\`\`\`\n* I am experiencing technical difficulties\n* I am working to resolve this issue\n* Please try again\n\`\`\``;
+                }
+                
+                // Quick retry with exponential backoff
+                await new Promise(resolve => setTimeout(resolve, attempt * 500));
             }
         }
         
-        // Wrap response in triple backticks for frontend formatting
-        return `\`\`\`\n${agentResponse}\n\`\`\``;
-        
     } catch (error) {
         console.error(`Error running agent ${agentName}:`, error);
-        return `\`\`\`\nAgent ${agentName} encountered an error. Please try again.\n\`\`\``;
+        return `\`\`\`\n* I am encountering an error: ${error.message}\n* I am attempting recovery\n* Please try again\n\`\`\``;
     }
 }
 
@@ -771,8 +788,9 @@ async function directLLMResponse(message) {
     return response.choices[0].message.content;
 }
 
-export const query = async (message) => {
+export const query = async (message, userContext = null) => {
     try {
+        // Step 1: Get initial LLM response (same logic as queryStream but without streaming)
         const response = await client.chat.completions.create({
             model: process.env.LLM || "kimi-k2-0711-preview",
             messages: [
@@ -787,9 +805,32 @@ export const query = async (message) => {
             ],
             temperature: 0.7,
         });
-        return {
-            output_text: response.choices[0].message.content
+        
+        const initialResponse = response.choices[0].message.content;
+        
+        // Step 2: Execute agent workflow (same as queryStream but without streaming updates)
+        let agentWorkflowResult = null;
+        try {
+            // Create a mock response object for agent workflow (without actual streaming)
+            const mockRes = {
+                write: () => {}, // No-op for non-streaming
+                end: () => {}
+            };
+            
+            agentWorkflowResult = await executeAgentWorkflow(message, mockRes, userContext);
+        } catch (workflowError) {
+            console.error("Agent workflow error in query:", workflowError);
+            // Continue with initial response if workflow fails
+        }
+        
+        // Step 3: Combine responses
+        const finalResponse = {
+            output_text: initialResponse,
+            agent_workflow_result: agentWorkflowResult,
+            combined_response: agentWorkflowResult || initialResponse
         };
+        
+        return finalResponse;
     } catch (error) {
         console.error("Error in query function:", error);
         throw error;
