@@ -88,10 +88,31 @@ export const updateChat = async (req, res) => {
     
     const { id } = req.params;
     console.log(req.body);
-    const { message, selected = "", journalIds = [] } =  req.body;
+    const { message, selected = "", journalIds = [] } = req.body;
+    
+    // Validate journalIds array - ensure all are valid ObjectIds
+    const validJournalIds = journalIds.filter(id => {
+      try {
+        return id && id.toString().match(/^[0-9a-fA-F]{24}$/);
+      } catch (e) {
+        return false;
+      }
+    });
+    
+    if (journalIds.length !== validJournalIds.length) {
+      console.warn(`Some invalid journal IDs were filtered out. Original: ${journalIds.length}, Valid: ${validJournalIds.length}`);
+    }
+    
     let originalChat = await Chat.findById(id);
     if (!originalChat) {
-      res.write(`event: error\ndata: ${JSON.stringify({ error: error.message })}\n\n`);
+      res.write(`event: error\ndata: ${JSON.stringify({ error: "Chat not found" })}\n\n`);
+      return;
+    }
+    
+    // Verify chat ownership
+    if (originalChat.userId.toString() !== req.user.userId) {
+      res.write(`event: error\ndata: ${JSON.stringify({ error: "Access denied" })}\n\n`);
+      return;
     }
     
     const key = req.user.userId + "_" + id;
@@ -111,15 +132,34 @@ export const updateChat = async (req, res) => {
       sender: "user",
       content: message,
       timestamp: new Date(),
+      journalId: validJournalIds || [] // Track which journals this user message references
     });
     // await originalChat.save();
     let requestMessages = message;
-    if (journalIds && journalIds.length > 0) {
+    
+    // Retrieve and append journal contents if journalIds are provided
+    if (validJournalIds && validJournalIds.length > 0) {
       requestMessages += "\n\nfollowing is the Journal that I would like to reference: {\n";
-      for (const journalId of journalIds) {
-        const journal = await Journal.findById(journalId);
-        if (journal) {
-          requestMessages += `\nTitle: ${journal.title}\nContent: ${journal.content}\nTags: ${journal.tags.join(", ")}\nAudio IDs: ${journal.audioIds.join(", ")}`;
+      
+      for (const journalId of validJournalIds) {
+        try {
+          const journal = await Journal.findById(journalId);
+          if (journal && journal.userId.toString() === req.user.userId) {
+            requestMessages += `\n--- Journal Entry ---\n`;
+            requestMessages += `Title: ${journal.title}\n`;
+            requestMessages += `Content: ${journal.content || 'No content'}\n`;
+            requestMessages += `Tags: ${journal.tags && journal.tags.length > 0 ? journal.tags.join(", ") : 'No tags'}\n`;
+            requestMessages += `Audio IDs: ${journal.audioIds && journal.audioIds.length > 0 ? journal.audioIds.join(", ") : 'No audio files'}\n`;
+            requestMessages += `Created: ${new Date(journal.createdAt).toLocaleString()}\n`;
+            requestMessages += `Updated: ${new Date(journal.updatedAt).toLocaleString()}\n`;
+            requestMessages += `--- End Journal Entry ---\n`;
+          } else if (!journal) {
+            console.warn(`Journal with ID ${journalId} not found`);
+          } else {
+            console.warn(`Access denied to journal with ID ${journalId} for user ${req.user.userId}`);
+          }
+        } catch (journalError) {
+          console.error(`Error retrieving journal ${journalId}:`, journalError);
         }
       }
       requestMessages += "\n}";
@@ -162,11 +202,18 @@ export const updateChat = async (req, res) => {
       sender: "llm",
       content: response,
       timestamp: new Date(),
+      journalId: [] // Initialize journalId array
     });
-    let ids = originalChat.messages[originalChat.messages.length - 1].journalId.filter(
-      item => !journalIds.includes(item)
-    );
-    originalChat.messages[originalChat.messages.length - 1].journalId = [...ids, ...journalIds];
+    
+    // Update the journalId array for the last message (LLM response)
+    const lastMessageIndex = originalChat.messages.length - 1;
+    const existingJournalIds = originalChat.messages[lastMessageIndex].journalId || [];
+    
+    // Filter out journalIds that already exist to avoid duplicates
+    const newJournalIds = validJournalIds.filter(id => !existingJournalIds.some(existingId => existingId.toString() === id.toString()));
+    
+    // Add new journalIds to the existing ones
+    originalChat.messages[lastMessageIndex].journalId = [...existingJournalIds, ...newJournalIds];
     await originalChat.save();
 
     if (!originalChat) {
