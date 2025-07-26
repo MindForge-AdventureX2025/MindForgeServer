@@ -157,12 +157,14 @@ async function runInteractiveTest() {
 
         try {
             // Test simple query first
-            console.log('\n📋 Testing Simple Query:');
-            const simpleResult = await testQuery(fullMessage);
+            // console.log('\n📋 Testing Simple Query:');
+            // const simpleResult = await testQuery(fullMessage);
 
             // Test streaming query with agent workflow
             console.log('\n📋 Testing Streaming Query with Agent Workflow:');
             const streamResult = await testQueryStream(fullMessage);
+
+            saveTestResults(streamResult, `test_case_${i + 1}_results.json`);
 
             console.log('\n✅ Test case completed successfully!\n');
             console.log('─'.repeat(60));
