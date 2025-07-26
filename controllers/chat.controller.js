@@ -95,7 +95,7 @@ export const updateChat = async (req, res) => {
     }
     
     const key = req.user.userId + "_" + id;
-    const data = await connectRedis.get(key);
+    const data = await connectRedis().get(key);
     let history = [];
     if (data) {
       history = JSON.parse(data);
@@ -150,7 +150,7 @@ export const updateChat = async (req, res) => {
       }
     )
 
-    await connectRedis.set(key, JSON.stringify(history), {
+    await connectRedis().set(key, JSON.stringify(history), {
       EX: 60 * 60 * 24 // Set expiration to 1 day
     });
 
