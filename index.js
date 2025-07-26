@@ -26,15 +26,19 @@ app.use(express.urlencoded({ extended: true }));
 // Test mode middleware - bypass auth for testing
 const testBypass = (req, res, next) => {
     if (req.headers['x-test-mode'] === 'true') {
+        // Check if there's a specific user ID for internal tool calls
+        const customUserId = req.headers['x-user-id'];
+        const userId = customUserId || '507f1f77bcf86cd799439011';
+        
         // Create a mock user for testing with valid ObjectId
         req.user = {
-            _id: '507f1f77bcf86cd799439011',
-            userId: '507f1f77bcf86cd799439011',
+            _id: userId,
+            userId: userId,
             firstName: 'Test',
             lastName: 'User',
             username: 'testuser',
             email: 'test@example.com',
-            clerkId: 'test-clerk-id'
+            clerkId: customUserId ? `clerk-${customUserId}` : 'test-clerk-id'
         };
         return next();
     }
