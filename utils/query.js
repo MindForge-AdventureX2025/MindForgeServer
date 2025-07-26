@@ -51,10 +51,10 @@ async function executeAgentWorkflow(userMessage, res) {
         const maxIterations = 10; // Prevent infinite loops
         
         // Step 1: Start with supervisor agent
-        // res.write(`data: ${JSON.stringify({ 
-        //     status: 'workflow_started', 
-        //     message: 'Supervisor agent analyzing request...' 
-        // })}\n\n`);
+        res.write(`data: ${JSON.stringify({ 
+            status: 'workflow_started', 
+            chunk: 'Supervisor agent analyzing request...' 
+        })}\n\n`);
         
         let supervisorResponse = await runAgent('supervisor', currentMessage);
         let supervisorData;
@@ -71,11 +71,11 @@ async function executeAgentWorkflow(userMessage, res) {
         while (!workflowComplete && iterationCount < maxIterations) {
             iterationCount++;
             
-            // res.write(`data: ${JSON.stringify({ 
-            //     status: 'iteration', 
-            //     count: iterationCount,
-            //     message: 'Supervisor coordinating agents...' 
-            // })}\n\n`);
+            res.write(`data: ${JSON.stringify({ 
+                status: 'iteration', 
+                count: iterationCount,
+                chunk: 'Supervisor coordinating agents...' 
+            })}\n\n`);
             
             // Check if supervisor indicates completion
             if (supervisorData.status === 'complete') {
@@ -89,20 +89,20 @@ async function executeAgentWorkflow(userMessage, res) {
                 const agentTask = supervisorData.task;
                 const agentContext = supervisorData.context || '';
                 
-                // res.write(`data: ${JSON.stringify({ 
-                //     status: 'agent_selected', 
-                //     agent: selectedAgent,
-                //     message: `${selectedAgent} agent processing task...` 
-                // })}\n\n`);
+                res.write(`data: ${JSON.stringify({ 
+                    status: 'agent_selected', 
+                    agent: selectedAgent,
+                    chunk: `${selectedAgent} agent processing task...` 
+                })}\n\n`);
                 
                 // Execute the selected agent
                 const agentResponse = await runAgent(selectedAgent, `${agentContext}\n\nTask: ${agentTask}`);
                 
                 // Step 3: Monitor agent evaluates the response
-                // res.write(`data: ${JSON.stringify({ 
-                //     status: 'monitoring', 
-                //     message: 'Monitor agent evaluating response quality...' 
-                // })}\n\n`);
+                res.write(`data: ${JSON.stringify({ 
+                    status: 'monitoring', 
+                    chunk: 'Monitor agent evaluating response quality...' 
+                })}\n\n`);
                 
                 const monitorResponse = await runAgent('monitor', 
                     `Agent: ${selectedAgent}\nTask: ${agentTask}\nResponse: ${agentResponse}\n\nEvaluate this response and provide satisfaction index (1-10). If satisfaction < 7, provide improvement feedback.`
@@ -124,11 +124,11 @@ async function executeAgentWorkflow(userMessage, res) {
                 
                 // If monitor satisfaction is too low, retry with the same agent
                 if (satisfactionScore < 7) {
-                    // res.write(`data: ${JSON.stringify({ 
-                    //     status: 'retry_required', 
-                    //     satisfaction: satisfactionScore,
-                    //     message: 'Response quality insufficient, requesting improvement...' 
-                    // })}\n\n`);
+                    res.write(`data: ${JSON.stringify({ 
+                        status: 'retry_required', 
+                        satisfaction: satisfactionScore,
+                        chunk: 'Response quality insufficient, requesting improvement...' 
+                    })}\n\n`);
                     
                     const improvementFeedback = monitorData?.feedback || 'Please improve the response quality and completeness.';
                     const improvedResponse = await runAgent(selectedAgent, 
@@ -141,12 +141,12 @@ async function executeAgentWorkflow(userMessage, res) {
                     );
                 } else {
                     // Step 4: Send successful response back to supervisor
-                    // res.write(`data: ${JSON.stringify({ 
-                    //     status: 'agent_completed', 
-                    //     agent: selectedAgent,
-                    //     satisfaction: satisfactionScore,
-                    //     message: 'Agent task completed successfully' 
-                    // })}\n\n`);
+                    res.write(`data: ${JSON.stringify({ 
+                        status: 'agent_completed', 
+                        agent: selectedAgent,
+                        satisfaction: satisfactionScore,
+                        chunk: 'Agent task completed successfully' 
+                    })}\n\n`);
                     
                     supervisorResponse = await runAgent('supervisor', 
                         `Previous Plan: ${JSON.stringify(supervisorData)}\n\nAgent: ${selectedAgent}\nCompleted Task: ${agentTask}\nResponse: ${agentResponse}\n\nEvaluate mission completion and decide next steps.`
@@ -178,10 +178,10 @@ async function executeAgentWorkflow(userMessage, res) {
         
     } catch (error) {
         console.error("Error in agent workflow:", error);
-        // res.write(`data: ${JSON.stringify({ 
-        //     status: 'error', 
-        //     message: 'Workflow error occurred, falling back to direct response' 
-        // })}\n\n`);
+        res.write(`data: ${JSON.stringify({ 
+            status: 'error', 
+            chunk: 'Workflow error occurred, falling back to direct response' 
+        })}\n\n`);
         
         // Fallback to direct LLM response
         return await directLLMResponse(userMessage);
@@ -280,10 +280,10 @@ export const queryStream = async (message, res) => {
         let fullText = "";
         
         // First, provide the initial response via streaming
-        // res.write(`data: ${JSON.stringify({ 
-        //     status: 'initial_response_start', 
-        //     message: 'Generating initial response...' 
-        // })}\n\n`);
+        res.write(`data: ${JSON.stringify({ 
+            status: 'initial_response_start', 
+            chunk: 'Generating initial response...' 
+        })}\n\n`);
         
         const stream = await client.chat.completions.create({
             model: process.env.LLM || "kimi-k2-0711-preview",
@@ -308,39 +308,39 @@ export const queryStream = async (message, res) => {
         }
 
         // Signal completion of initial response
-        // res.write(`data: ${JSON.stringify({ 
-        //     status: 'initial_response_complete',
-        //     message: 'Initial response completed. Starting agent workflow...' 
-        // })}\n\n`);
+        res.write(`data: ${JSON.stringify({ 
+            status: 'initial_response_complete',
+            chunk: 'Initial response completed. Starting agent workflow...' 
+        })}\n\n`);
 
         // After initial response is complete, run the agent workflow
         try {
             const agentWorkflowResult = await executeAgentWorkflow(message, res);
             
             // Send the enhanced response from agent workflow
-            // res.write(`data: ${JSON.stringify({ 
-            //     status: 'workflow_complete',
-            //     enhanced_response: agentWorkflowResult,
-            //     message: 'Agent workflow completed successfully' 
-            // })}\n\n`);
+            res.write(`data: ${JSON.stringify({ 
+                status: 'workflow_complete',
+                enhanced_response: agentWorkflowResult,
+                chunk: 'Agent workflow completed successfully' 
+            })}\n\n`);
             
             // Return the original response for now, enhanced response is sent via stream
             return fullText;
             
         } catch (workflowError) {
             console.error("Agent workflow error:", workflowError);
-            // res.write(`data: ${JSON.stringify({ 
-            //     status: 'workflow_error',
-            //     error: workflowError.message,
-            //     message: 'Agent workflow encountered an error, using initial response' 
-            // })}\n\n`);
+            res.write(`data: ${JSON.stringify({ 
+                status: 'workflow_error',
+                error: workflowError.message,
+                chunk: 'Agent workflow encountered an error, using initial response' 
+            })}\n\n`);
             
             return fullText;
         }
 
     } catch (error) {
         console.error("Error in queryStream function:", error);
-        // res.write(`event: error\ndata: ${JSON.stringify({ error: error.message })}\n\n`);
+        res.write(`event: error\ndata: ${JSON.stringify({ chunk: error.message })}\n\n`);
         return "An error occurred while processing your request.";
     }
 };
