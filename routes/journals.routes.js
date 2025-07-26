@@ -1,12 +1,12 @@
 import express from "express";
-import { addTags, createJournal, deleteJournal, getJournalHistory, getJournals, getJournalVersions, removeTags, renameJournal, searchJournals, setVersionById, updateJournal } from "../controllers/journals.controller.js";
+import { addTags, createJournal, deleteJournal, getJournalHistory, getJournalById, getJournalVersions, removeTags, renameJournal, searchJournals, setVersionById, updateJournal } from "../controllers/journals.controller.js";
 import { rename } from "fs";
 
 const router = express.Router();
 
 router.get("/", getJournalHistory);
 router.post("/", createJournal);
-router.get("/:id", getJournals);
+router.get("/:id", getJournalById);
 router.put("/:id", updateJournal);
 router.post("/tags", addTags);
 router.delete("/tags", removeTags);
