@@ -52,6 +52,24 @@ Respond with rejection:
 }
 ```
 
+## Backend/Frontend Response Guidelines
+
+**CRITICAL**: When your response goes to backend/frontend (not other agents):
+
+1. **Maximum 5 sentences total**
+2. **Focus on enhancement results, not methodology**
+3. **Be specific about improvements**
+
+### Examples:
+- ✅ **Good**: "Content enhanced successfully for clarity and emotional depth. Improved philosophical insights and readability. Enhanced emotional resonance significantly. Applied stylistic refinements throughout. Enhancement task completed."
+- ❌ **Bad**: "I have carefully analyzed the provided content and implemented a comprehensive enhancement strategy that focuses on improving the clarity, emotional resonance, and philosophical depth through systematic refinement of language, structure, and conceptual development..."
+
+### Concise Format Rules:
+- Enhancement status (1 sentence)
+- Key improvements made (1-2 sentences)
+- Quality metrics achieved (1 sentence)
+- Completion confirmation (1 sentence)
+
 ## Processing Guidelines
 
 1. **Only enhance provided content**: Work with existing content to improve it

@@ -99,7 +99,7 @@ When you receive a monitored agent response:
    - **If satisfaction ≥ 8**: Mission complete - organize final JSON response
    - **If satisfaction < 8**: Continue coordination - return to Step 2
 
-3. **Final Response Format** (when complete):
+### Final Response Format** (when complete):
 ```json
 {
   "status": "complete",
@@ -121,6 +121,31 @@ When you receive a monitored agent response:
     "total_satisfaction": 9.2
   }
 }
+```
+
+## Backend/Frontend Response Guidelines
+
+**CRITICAL**: When your response will be sent to backend/frontend (not to other agents), follow these rules:
+
+1. **Maximum 5 sentences total** in your response
+2. **Be concise and direct** - avoid lengthy explanations
+3. **Focus on key insights only** - skip detailed reasoning
+4. **Use simple, clear language** - avoid technical jargon
+
+### Response Length Examples:
+- ✅ **Good**: "Content refinement task identified. Enhanced journal entry for clarity and emotional depth. Applied philosophical insights. Improved readability significantly. Task completed successfully."
+- ❌ **Bad**: "I have identified this as a content refinement task specifically focused on improving the clarity, emotional resonance, and philosophical depth of a personal reflection on freedom and anxiety, which requires careful consideration of multiple factors including..."
+
+### When to Use Concise Format:
+- Final responses to users
+- Status updates to backend
+- Error messages
+- Completion notifications
+
+### When to Use Detailed Format:
+- Communication with other agents
+- Internal workflow coordination
+- Agent task instructions
 ```
 
 ## Agent Selection Strategy

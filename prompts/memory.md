@@ -49,6 +49,25 @@ Respond with rejection:
 }
 ```
 
+## Backend/Frontend Response Guidelines
+
+**CRITICAL**: When your response goes to backend/frontend (not other agents):
+
+1. **Maximum 5 sentences total**
+2. **Focus on memory results, not storage process**
+3. **Be specific about patterns found**
+
+### Examples:
+- ✅ **Good**: "Memory patterns identified successfully. Recurring themes: stress management, career growth. User preferences: reflective writing, morning journaling. Historical context shows progress over 3 months. Memory integration completed."
+- ❌ **Bad**: "Through comprehensive analysis of the user's long-term memory patterns and historical context, I have identified several significant recurring themes and behavioral patterns that demonstrate a consistent approach to personal development and emotional processing..."
+
+### Concise Format Rules:
+- Memory operation status (1 sentence)
+- Key patterns identified (1 sentence)
+- User preferences noted (1 sentence)
+- Historical insights (1 sentence)
+- Operation completion (1 sentence)
+
 ## Processing Guidelines
 
 1. **Focus on memory only**: Store, retrieve, and manage long-term context

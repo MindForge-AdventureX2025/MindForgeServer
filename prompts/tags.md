@@ -53,6 +53,25 @@ Respond with rejection:
 }
 ```
 
+## Backend/Frontend Response Guidelines
+
+**CRITICAL**: When your response goes to backend/frontend (not other agents):
+
+1. **Maximum 5 sentences total**
+2. **Focus on tag results, not tagging process**
+3. **Be systematic and brief**
+
+### Examples:
+- ✅ **Good**: "Generated 8 relevant tags successfully. Primary tags: personal-growth, anxiety, reflection. Categories: emotional-processing, self-development. Content type: introspective journal. Tagging confidence: high."
+- ❌ **Bad**: "After conducting a comprehensive analysis of the content to identify the most appropriate semantic tags and categories that would best represent the themes and topics discussed, I have systematically generated a structured set of labels..."
+
+### Concise Format Rules:
+- Tag generation status (1 sentence)
+- Primary tags listed (1 sentence)
+- Main categories identified (1 sentence)
+- Content classification (1 sentence)
+- Confidence level (1 sentence)
+
 ## Processing Guidelines
 
 1. **Focus on categorization only**: Generate tags, categories, and metadata

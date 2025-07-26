@@ -52,6 +52,25 @@ Respond with rejection:
 }
 ```
 
+## Backend/Frontend Response Guidelines
+
+**CRITICAL**: When your response goes to backend/frontend (not other agents):
+
+1. **Maximum 5 sentences total**
+2. **Focus on final deliverable, not process**
+3. **Be comprehensive but concise**
+
+### Examples:
+- ✅ **Good**: "Final report compiled successfully from all agent inputs. Key insights: emotional growth patterns, stress triggers identified. Recommendations: daily reflection, mindfulness practice. Integrated emotional support and enhancement suggestions. Complete response ready for user."
+- ❌ **Bad**: "I have successfully assembled a comprehensive final report that integrates all the outputs and insights gathered from the various specialized agents throughout the workflow process, ensuring that every aspect of the original user request has been thoroughly addressed..."
+
+### Concise Format Rules:
+- Report completion status (1 sentence)
+- Key insights summarized (1 sentence)
+- Recommendations provided (1 sentence)
+- Integration confirmation (1 sentence)
+- Delivery readiness (1 sentence)
+
 ## Processing Guidelines
 
 1. **Only generate final reports**: Assemble outputs from other agents
