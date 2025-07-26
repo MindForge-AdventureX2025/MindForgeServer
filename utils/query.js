@@ -280,10 +280,10 @@ export const queryStream = async (message, res) => {
         let fullText = "";
         
         // First, provide the initial response via streaming
-        res.write(`data: ${JSON.stringify({ 
-            status: 'initial_response_start', 
-            message: 'Generating initial response...' 
-        })}\n\n`);
+        // res.write(`data: ${JSON.stringify({ 
+        //     status: 'initial_response_start', 
+        //     message: 'Generating initial response...' 
+        // })}\n\n`);
         
         const stream = await client.chat.completions.create({
             model: "kimi-k2-0711-preview",
@@ -308,39 +308,39 @@ export const queryStream = async (message, res) => {
         }
 
         // Signal completion of initial response
-        res.write(`data: ${JSON.stringify({ 
-            status: 'initial_response_complete',
-            message: 'Initial response completed. Starting agent workflow...' 
-        })}\n\n`);
+        // res.write(`data: ${JSON.stringify({ 
+        //     status: 'initial_response_complete',
+        //     message: 'Initial response completed. Starting agent workflow...' 
+        // })}\n\n`);
 
         // After initial response is complete, run the agent workflow
         try {
             const agentWorkflowResult = await executeAgentWorkflow(message, res);
             
             // Send the enhanced response from agent workflow
-            res.write(`data: ${JSON.stringify({ 
-                status: 'workflow_complete',
-                enhanced_response: agentWorkflowResult,
-                message: 'Agent workflow completed successfully' 
-            })}\n\n`);
+            // res.write(`data: ${JSON.stringify({ 
+            //     status: 'workflow_complete',
+            //     enhanced_response: agentWorkflowResult,
+            //     message: 'Agent workflow completed successfully' 
+            // })}\n\n`);
             
             // Return the original response for now, enhanced response is sent via stream
             return fullText;
             
         } catch (workflowError) {
             console.error("Agent workflow error:", workflowError);
-            res.write(`data: ${JSON.stringify({ 
-                status: 'workflow_error',
-                error: workflowError.message,
-                message: 'Agent workflow encountered an error, using initial response' 
-            })}\n\n`);
+            // res.write(`data: ${JSON.stringify({ 
+            //     status: 'workflow_error',
+            //     error: workflowError.message,
+            //     message: 'Agent workflow encountered an error, using initial response' 
+            // })}\n\n`);
             
             return fullText;
         }
 
     } catch (error) {
         console.error("Error in queryStream function:", error);
-        res.write(`event: error\ndata: ${JSON.stringify({ error: error.message })}\n\n`);
+        // res.write(`event: error\ndata: ${JSON.stringify({ error: error.message })}\n\n`);
         return "An error occurred while processing your request.";
     }
 };
