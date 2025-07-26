@@ -53,14 +53,14 @@ Respond with rejection:
 
 **CRITICAL**: When your response goes to backend/frontend (not other agents):
 
-1. **Maximum 3 sentences total**
+1. **Maximum 50 words total**
 2. **Focus on memory results, not storage process**
 3. **Be specific about patterns found**
-4. **Make sure your response is enclosed inside two ```**
+4. **Response will be automatically wrapped in ``` by the system**
 
 ### Examples:
-- ✅ **Good**: "Memory patterns identified successfully. Recurring themes: stress management, career growth. User preferences: reflective writing, morning journaling. Historical context shows progress over 3 months. Memory integration completed."
-- ❌ **Bad**: "Through comprehensive analysis of the user's long-term memory patterns and historical context, I have identified several significant recurring themes and behavioral patterns that demonstrate a consistent approach to personal development and emotional processing..."
+- ✅ **Good (41 words)**: "Memory patterns identified successfully. Recurring themes: stress management, career growth. User preferences: reflective writing, morning journaling. Historical context shows progress over 3 months. Memory integration completed."
+- ❌ **Bad (over 50 words)**: "Through comprehensive analysis of the user's long-term memory patterns and historical context, I have identified several significant recurring themes and behavioral patterns that demonstrate a consistent approach to personal development and emotional processing..."
 
 ### Concise Format Rules:
 - Memory operation status (1 sentence)

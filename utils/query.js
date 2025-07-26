@@ -53,7 +53,7 @@ async function executeAgentWorkflow(userMessage, res) {
         // Step 1: Start with supervisor agent
         res.write(`data: ${JSON.stringify({ 
             status: 'workflow_started', 
-            chunk: '<start>Supervisor agent analyzing request...</start>' 
+            chunk: '<start><agent>Supervisor agent</agent> analyzing request...</start>' 
         })}\n\n`);
         
         let supervisorResponse = await runAgent('supervisor', currentMessage);
@@ -74,7 +74,7 @@ async function executeAgentWorkflow(userMessage, res) {
             res.write(`data: ${JSON.stringify({ 
                 status: 'iteration', 
                 count: iterationCount,
-                chunk: '<start>Supervisor coordinating agents...</start>' 
+                chunk: '<start><agent>Supervisor agent</agent> coordinating agents...</start>' 
             })}\n\n`);
             
             // Check if supervisor indicates completion
@@ -92,7 +92,7 @@ async function executeAgentWorkflow(userMessage, res) {
                 res.write(`data: ${JSON.stringify({ 
                     status: 'agent_selected', 
                     agent: selectedAgent,
-                    chunk: `<start>${selectedAgent} agent processing task...</start>` 
+                    chunk: `<start><agent>${selectedAgent} agent</agent> processing task...</start>` 
                 })}\n\n`);
                 
                 // Execute the selected agent
@@ -101,7 +101,7 @@ async function executeAgentWorkflow(userMessage, res) {
                 // Step 3: Monitor agent evaluates the response
                 res.write(`data: ${JSON.stringify({ 
                     status: 'monitoring', 
-                    chunk: '<start>Monitor agent evaluating response quality...</start>' 
+                    chunk: '<start><agent>Monitor agent</agent> evaluating response quality...</start>' 
                 })}\n\n`);
                 
                 const monitorResponse = await runAgent('monitor', 
@@ -222,11 +222,14 @@ async function runAgent(agentName, message) {
             temperature: 0.7,
         });
         
-        return response.choices[0].message.content;
+        const agentResponse = response.choices[0].message.content;
+        
+        // Wrap response in triple backticks for frontend formatting
+        return `\`\`\`\n${agentResponse}\n\`\`\``;
         
     } catch (error) {
         console.error(`Error running agent ${agentName}:`, error);
-        return `Agent ${agentName} encountered an error. Please try again.`;
+        return `\`\`\`\nAgent ${agentName} encountered an error. Please try again.\n\`\`\``;
     }
 }
 

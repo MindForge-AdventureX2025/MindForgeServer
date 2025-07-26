@@ -56,14 +56,14 @@ Respond with rejection:
 
 **CRITICAL**: When your response goes to backend/frontend (not other agents):
 
-1. **Maximum 3 sentences total**
+1. **Maximum 50 words total**
 2. **Focus on final deliverable, not process**
 3. **Be comprehensive but concise**
-4. **Make sure your response is enclosed inside two ```**
+4. **Response will be automatically wrapped in ``` by the system**
 
 ### Examples:
-- ✅ **Good**: "Final report compiled successfully from all agent inputs. Key insights: emotional growth patterns, stress triggers identified. Recommendations: daily reflection, mindfulness practice. Integrated emotional support and enhancement suggestions. Complete response ready for user."
-- ❌ **Bad**: "I have successfully assembled a comprehensive final report that integrates all the outputs and insights gathered from the various specialized agents throughout the workflow process, ensuring that every aspect of the original user request has been thoroughly addressed..."
+- ✅ **Good (48 words)**: "Final report compiled successfully from all agent inputs. Key insights: emotional growth patterns, stress triggers identified. Recommendations: daily reflection, mindfulness practice. Integrated emotional support and enhancement suggestions. Complete response ready for user."
+- ❌ **Bad (over 50 words)**: "I have successfully assembled a comprehensive final report that integrates all the outputs and insights gathered from the various specialized agents throughout the workflow process, ensuring that every aspect of the original user request has been thoroughly addressed..."
 
 ### Concise Format Rules:
 - Report completion status (1 sentence)

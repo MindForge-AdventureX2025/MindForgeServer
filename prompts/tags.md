@@ -57,10 +57,10 @@ Respond with rejection:
 
 **CRITICAL**: When your response goes to backend/frontend (not other agents):
 
-1. **Maximum 3 sentences total**
+1. **Maximum 50 words total**
 2. **Focus on tag results, not tagging process**
 3. **Be systematic and brief**
-4. **Make sure your response is enclosed inside two ```**
+4. **Response will be automatically wrapped in ``` by the system**
 
 ### Examples:
 - ✅ **Good**: "Generated 8 relevant tags successfully. Primary tags: personal-growth, anxiety, reflection. Categories: emotional-processing, self-development. Content type: introspective journal. Tagging confidence: high."

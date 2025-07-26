@@ -53,9 +53,10 @@ Respond with rejection:
 
 **CRITICAL**: When your response goes to backend/frontend (not other agents):
 
-1. **Maximum 3 sentences total**
+1. **Maximum 50 words total**
 2. **Be extremely concise**
 3. **Focus on what was found, not how**
+4. **Response will be automatically wrapped in ``` by the system**
 
 ### Examples:
 - ✅ **Good**: "Found 3 relevant journal entries. Extracted key emotional patterns. Located stress-related content. Sources: daily reflections, mood tracking. Search completed successfully."

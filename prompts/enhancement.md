@@ -56,14 +56,14 @@ Respond with rejection:
 
 **CRITICAL**: When your response goes to backend/frontend (not other agents):
 
-1. **Maximum 3 sentences total**
+1. **Maximum 50 words total**
 2. **Focus on enhancement results, not methodology**
 3. **Be specific about improvements**
-4. **Make sure your response is enclosed inside two ```**
+4. **Response will be automatically wrapped in ``` by the system**
 
 ### Examples:
-- ✅ **Good**: "Content enhanced successfully for clarity and emotional depth. Improved philosophical insights and readability. Enhanced emotional resonance significantly. Applied stylistic refinements throughout. Enhancement task completed."
-- ❌ **Bad**: "I have carefully analyzed the provided content and implemented a comprehensive enhancement strategy that focuses on improving the clarity, emotional resonance, and philosophical depth through systematic refinement of language, structure, and conceptual development..."
+- ✅ **Good (43 words)**: "Content enhanced successfully for clarity and emotional depth. Improved philosophical insights and readability. Enhanced emotional resonance significantly. Applied stylistic refinements throughout. Enhancement task completed."
+- ❌ **Bad (over 50 words)**: "I have carefully analyzed the provided content and implemented a comprehensive enhancement strategy that focuses on improving the clarity, emotional resonance, and philosophical depth through systematic refinement of language, structure, and conceptual development..."
 
 ### Concise Format Rules:
 - Enhancement status (1 sentence)
