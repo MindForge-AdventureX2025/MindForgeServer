@@ -2,7 +2,7 @@ import Chat from "../models/chat.model.js";
 import Journal from "../models/journal.model.js";
 import User from "../models/user.model.js";
 import { query, queryStream } from "../utils/query.js";
-import redisClient from "../utils/redis.js";
+import connectRedis from "../utils/redis.js";
 
 export const createChat = async (req, res) => {
   try {
@@ -95,7 +95,7 @@ export const updateChat = async (req, res) => {
     }
     
     const key = req.user.userId + "_" + id;
-    const data = await redisClient.get(key);
+    const data = await connectRedis.get(key);
     let history = [];
     if (data) {
       history = JSON.parse(data);
@@ -150,7 +150,7 @@ export const updateChat = async (req, res) => {
       }
     )
 
-    await redisClient.set(key, JSON.stringify(history), {
+    await connectRedis.set(key, JSON.stringify(history), {
       EX: 60 * 60 * 24 // Set expiration to 1 day
     });
 
