@@ -216,10 +216,6 @@ export const updateChat = async (req, res) => {
     originalChat.messages[lastMessageIndex].journalId = [...existingJournalIds, ...newJournalIds];
     await originalChat.save();
 
-    if (!originalChat) {
-        res.write(`event: error\ndata: ${JSON.stringify({ error: error.message })}\n\n`);
-    }
-
     originalChat.createdAt = new Date(originalChat.createdAt).getTime();
     originalChat.updatedAt = new Date(originalChat.updatedAt).getTime();
     originalChat.messages.forEach(message => {

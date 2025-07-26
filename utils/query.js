@@ -4,17 +4,6 @@ import { readFile } from "fs/promises";
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import axios from 'axios';
-import { 
-    supervisor_agent, 
-    retrieval_agent, 
-    summarization_agent, 
-    emotion_agent, 
-    tags_agent, 
-    enhancement_agent, 
-    memory_agent, 
-    report_agent, 
-    monitor_agent 
-} from "./agents.js";
 
 dotenv.config();
 
@@ -29,19 +18,6 @@ const client = new OpenAI({
 // Use absolute path to avoid path resolution issues
 const systemPromptPath = join(__dirname, "..", "prompts", "system.md");
 const data = await readFile(systemPromptPath, "utf-8");
-
-// Agent registry for dynamic selection
-const agents = {
-    supervisor: supervisor_agent,
-    retrieval: retrieval_agent,
-    summarization: summarization_agent,
-    emotion: emotion_agent,
-    tags: tags_agent,
-    enhancement: enhancement_agent,
-    memory: memory_agent,
-    report: report_agent,
-    monitor: monitor_agent
-};
 
 // Agent name mapping for backend/logging (concise names to hide internal structure)
 const agentDisplayNames = {
@@ -994,12 +970,7 @@ async function runAgent(agentName, message, userContext = null, cleanForBackend 
     const MAX_RETRIES = 2;
     
     try {
-        const agent = agents[agentName];
-        if (!agent) {
-            throw new Error(`Processor ${getAgentDisplayName(agentName)} not found`);
-        }
-        
-        // Initialize backend tools if user context is provided
+        // Initialize backend tools if user context is provided  
         if (userContext && !backendTools) {
             backendTools = new BackendTools();
             if (userContext.userId && userContext.authToken) {
@@ -1374,7 +1345,7 @@ export const queryStream = async (message, res, userContext = null) => {
         // Signal completion of initial response
         res.write(`data: ${JSON.stringify({ 
             status: 'initial_response_complete',
-            chunk: '<complete>Initial response completed</complete> <start>Starting agent workflow...</start> ' 
+            chunk: '<complete>Initial response completed</complete> \n<start>Starting agent workflow...</start> ' 
         })}\n\n`);
 
         // After initial response is complete, run the agent workflow

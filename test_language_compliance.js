@@ -52,11 +52,11 @@ class MockResponse {
 
 async function testLanguageCompliance() {
     console.log("🔍 Testing Language Compliance for System Tags\n");
-    console.log("=" * 60);
+    console.log("=".repeat(60));
     
     for (const testCase of testCases) {
         console.log(`\n📝 Testing ${testCase.language}: ${testCase.description}`);
-        console.log("-" * 40);
+        console.log("-".repeat(40));
         
         try {
             // Test with queryStream (streaming response)
@@ -113,7 +113,7 @@ async function testLanguageCompliance() {
             console.error(`❌ Error testing ${testCase.language}:`, error.message);
         }
         
-        console.log("\n" + "=" * 40);
+        console.log("\n" + "=".repeat(40));
     }
     
     console.log("\n🎯 Language Compliance Test Complete");
