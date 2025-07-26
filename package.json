@@ -16,7 +16,9 @@
   "main": "index.js",
   "scripts": {
     "dev": "nodemon index.js",
-    "start": "node index.js"
+    "start": "node index.js",
+    "test:query": "node utils/query_test.js",
+    "test:query:custom": "node utils/query_test.js"
   },
   "dependencies": {
     "@clerk/express": "^1.7.11",
