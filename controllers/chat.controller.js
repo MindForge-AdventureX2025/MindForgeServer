@@ -101,10 +101,12 @@ export const updateChat = async (req, res) => {
     let requestMessages = message;
     if (journalIds && journalIds.length > 0) {
       requestMessages += "\n\nfollowing is the Journal that I would like to reference: {\n";
-      journalIds.forEach(async journalId => {
-        const { title, content } = await Journal.findById(journalId);
-        requestMessages += `\n\nJournal Title: ${title}\nJournal Content: ${content}`;
-      });
+      for (const journalId of journalIds) {
+        const journal = await Journal.findById(journalId);
+        if (journal) {
+          requestMessages += `\nTitle: ${journal.title}\nContent: ${journal.content}\nTags: ${journal.tags.join(", ")}\nAudio IDs: ${journal.audioIds.join(", ")}`;
+        }
+      }
       requestMessages += "\n}";
     }
     if (selected) {
