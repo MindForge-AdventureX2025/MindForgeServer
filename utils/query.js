@@ -133,19 +133,19 @@ class BackendTools {
         }
     }
 
-    async addTagsToJournal(id, tags) {
+    async addTagsToJournal(journalId, tags) {
         try {
-            const response = await this.axiosInstance.post('/api/journals/tags', { id, tags });
+            const response = await this.axiosInstance.post('/api/journals/tags', { journalId, tags });
             return { success: true, data: response.data };
         } catch (error) {
             return { success: false, error: error.response?.data?.message || error.message };
         }
     }
 
-    async removeTagsFromJournal(id, tags) {
+    async removeTagsFromJournal(journalId, tags) {
         try {
             const response = await this.axiosInstance.delete('/api/journals/tags', { 
-                data: { id, tags }
+                data: { journalId, tags }
             });
             return { success: true, data: response.data };
         } catch (error) {
@@ -456,9 +456,9 @@ class BackendTools {
             case 'search_journals':
                 return await this.searchJournals(params.keyword, params.tags, params.from, params.to);
             case 'add_tags':
-                return await this.addTagsToJournal(params.id, params.tags);
+                return await this.addTagsToJournal(params.journalId, params.tags);
             case 'remove_tags':
-                return await this.removeTagsFromJournal(params.id, params.tags);
+                return await this.removeTagsFromJournal(params.journalId, params.tags);
             case 'get_journal_versions':
                 return await this.getJournalVersions(params.id, params.limit, params.page);
             case 'set_journal_version':
@@ -580,8 +580,8 @@ class BackendTools {
             get_journal_history: "Get user's journal history. Params: {limit?: number, page?: number}",
             update_journal: "Update an existing journal. Params: {id: string, title: string, content: string}",
             search_journals: "Search journals by keyword and filters. Params: {keyword: string, tags?: string, from?: date, to?: date}",
-            add_tags: "Add tags to a journal. Params: {id: string, tags: string[]}",
-            remove_tags: "Remove tags from a journal. Params: {id: string, tags: string[]}",
+            add_tags: "Add tags to a journal. Params: {journalId: string, tags: string[]}",
+            remove_tags: "Remove tags from a journal. Params: {journalId: string, tags: string[]}",
             get_journal_versions: "Get version history of a journal. Params: {id: string, limit?: number, page?: number}",
             set_journal_version: "Restore a journal to a specific version. Params: {id: string, versionId: string}",
             rename_journal: "Rename a journal. Params: {id: string, name: string}",
@@ -963,30 +963,78 @@ async function runAgent(agentName, message, userContext = null) {
             }
         }
         
-        // Load agent-specific prompts
-        const agentPromptPath = join(__dirname, "..", "prompts", `${agentName}.md`);
+        // Load agent-specific prompts (next-generation optimization)
+        const nextGenPrompts = {
+            'supervisor': 'supervisor_nextgen.md',
+            'tags': 'tags_nextgen.md', 
+            'emotion': 'emotion_nextgen.md',
+            'memory': 'memory_nextgen.md'
+        };
+        
+        const worldClassPrompts = {
+            'supervisor': 'supervisor_worldclass.md',
+            'tags': 'tags_worldclass.md', 
+            'emotion': 'emotion_worldclass.md',
+            'memory': 'memory_worldclass.md'
+        };
+        
+        const promptFileName = nextGenPrompts[agentName] || worldClassPrompts[agentName] || `${agentName}.md`;
+        const agentPromptPath = join(__dirname, "..", "prompts", promptFileName);
         let agentPrompt;
         
         try {
             agentPrompt = await readFile(agentPromptPath, "utf-8");
         } catch (e) {
-            agentPrompt = `You are a specialized ${getAgentDisplayName(agentName)} processor. Handle the following request according to your role.`;
+            // Fallback to original prompt if world-class version doesn't exist
+            const fallbackPromptPath = join(__dirname, "..", "prompts", `${agentName}.md`);
+            try {
+                agentPrompt = await readFile(fallbackPromptPath, "utf-8");
+            } catch (fallbackError) {
+                agentPrompt = `You are a specialized ${getAgentDisplayName(agentName)} processor. Handle the following request according to your role.`;
+            }
         }
 
-        // Add tool information to agent prompt (optimized)
+        // Add tool information to agent prompt (agent-specific tools)
         let enhancedPrompt = agentPrompt;
         if (backendTools) {
             const toolDescriptions = backendTools.getToolDescriptions();
             const availableTools = backendTools.getAvailableTools();
             
-            enhancedPrompt += `\n\n## Available Tools:\n`;
+            enhancedPrompt += `\n\n## Available Tools for ${agentName}:\n`;
             
-            // Simplified tool list for faster processing
-            enhancedPrompt += `**Journal**: create_journal, get_journal, search_journals, update_journal\n`;
-            enhancedPrompt += `**Memory**: create_memory, search_memories, get_user_memories, update_memory\n`;
-            enhancedPrompt += `**Chat**: create_chat, get_chat_history\n\n`;
+            // Agent-specific tool assignments
+            if (agentName === 'tags') {
+                enhancedPrompt += `**Tags Management:**\n`;
+                enhancedPrompt += `- add_tags: ${toolDescriptions.add_tags}\n`;
+                enhancedPrompt += `- remove_tags: ${toolDescriptions.remove_tags}\n`;
+                enhancedPrompt += `- search_journals: ${toolDescriptions.search_journals}\n`;
+                enhancedPrompt += `- get_journal: ${toolDescriptions.get_journal}\n\n`;
+                enhancedPrompt += `Use these tools to analyze journal content and add relevant contextual tags.\n`;
+            } else if (agentName === 'retrieval') {
+                enhancedPrompt += `**Memory & Retrieval:**\n`;
+                enhancedPrompt += `- search_memories: ${toolDescriptions.search_memories}\n`;
+                enhancedPrompt += `- get_memories_by_type: ${toolDescriptions.get_memories_by_type}\n`;
+                enhancedPrompt += `- get_user_memories: ${toolDescriptions.get_user_memories}\n`;
+                enhancedPrompt += `- search_journals: ${toolDescriptions.search_journals}\n`;
+                enhancedPrompt += `- search_chat_history: ${toolDescriptions.search_chat_history}\n\n`;
+                enhancedPrompt += `Use these tools to find relevant information from past journals, memories, and conversations.\n`;
+            } else if (agentName === 'memory') {
+                enhancedPrompt += `**Memory Creation:**\n`;
+                enhancedPrompt += `- create_memory: ${toolDescriptions.create_memory}\n`;
+                enhancedPrompt += `- add_memory_tags: ${toolDescriptions.add_memory_tags}\n`;
+                enhancedPrompt += `- search_memories: ${toolDescriptions.search_memories}\n`;
+                enhancedPrompt += `- get_memory_stats: ${toolDescriptions.get_memory_stats}\n\n`;
+                enhancedPrompt += `Memory Types: user_preferences, behavioral_patterns, emotional_patterns, topics_of_interest, goals_and_aspirations, personal_insights, conversation_context\n`;
+                enhancedPrompt += `Use these tools to create and manage user memories based on insights and patterns.\n`;
+            } else {
+                // General tools for other agents
+                enhancedPrompt += `**General Tools:**\n`;
+                enhancedPrompt += `- get_journal: Get specific journal\n`;
+                enhancedPrompt += `- search_journals: Search journal content\n`;
+                enhancedPrompt += `- get_chat_history: Get conversation history\n\n`;
+            }
             
-            enhancedPrompt += `**Tool Usage**: \`\`\`json\n{"tool_call": {"tool": "tool_name", "params": {...}}}\`\`\`\n\n`;
+            enhancedPrompt += `**Tool Usage Format**: \`\`\`json\n{"tool_call": {"tool": "tool_name", "params": {...}}}\`\`\`\n\n`;
         }
         
         // Implement retry mechanism with timeout and optimization

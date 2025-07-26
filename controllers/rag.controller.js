@@ -191,16 +191,25 @@ export const searchMemories = async (req, res) => {
             searchQuery.memoryType = memoryType;
         }
 
-        if (tags) {
-            searchQuery.tags = { $in: tags.split(',') };
+        // Build search conditions
+        const searchConditions = [
+            { title: new RegExp(query, 'i') },
+            { content: new RegExp(query, 'i') }
+        ];
+
+        // Add tag-based search if no specific tags filter is applied
+        if (!tags) {
+            // Search for query words in tags
+            const queryWords = query.toLowerCase().split(' ').filter(word => word.length > 2);
+            if (queryWords.length > 0) {
+                searchConditions.push({ tags: { $in: queryWords } });
+            }
+        } else {
+            // Use specific tags filter
+            searchQuery.tags = { $in: tags.split(',').map(tag => tag.trim()) };
         }
 
-        // Text search
-        searchQuery.$or = [
-            { title: new RegExp(query, 'i') },
-            { content: new RegExp(query, 'i') },
-            { tags: { $in: query.toLowerCase().split(' ') } }
-        ];
+        searchQuery.$or = searchConditions;
 
         const memories = await Rag.find(searchQuery)
             .sort({ 'metadata.relevanceScore': -1, 'metadata.lastAccessedAt': -1 })

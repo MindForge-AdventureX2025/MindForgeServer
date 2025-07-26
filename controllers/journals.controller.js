@@ -100,29 +100,36 @@ export const updateJournal = async (req, res) => {
 export const searchJournals = async (req, res) => {
     try {
         const { keyword, tags = '', from, to } = req.query;
-        if(!from) {
-            from = new Date(0); // Default to the beginning of time if no 'from' date is provided
+        let dateFrom = from ? new Date(from) : new Date(0); // Default to the beginning of time if no 'from' date is provided
+        let dateTo = to ? new Date(to) : new Date(); // Default to the current date if no 'to' date is provided
+        
+        // Build search query
+        let searchQuery = {
+            userId: req.user.userId,
+            nonTitleUpdatedAt: { $gte: dateFrom, $lte: dateTo }
+        };
+        
+        // Add keyword search if provided
+        if (keyword) {
+            searchQuery.$or = [
+                { title: new RegExp(keyword, 'i') },
+                { content: new RegExp(keyword, 'i') }
+            ];
         }
-        if(!to) {
-            to = new Date(); // Default to the current date if no 'to' date is provided
+        
+        // Add tags filter if provided
+        if (tags && tags.trim() !== '') {
+            searchQuery.tags = { $in: tags.split(',').map(tag => tag.trim()) };
         }
-        const journals = await Journal.find({
-            $and: [
-                { $or: [
-                    { title: new RegExp(keyword, 'i') },
-                    { content: new RegExp(keyword, 'i') }
-                ]},
-                { userId: req.user.userId }, // Ensure the search is scoped to the current user
-                { nonTitleUpdatedAt: { $gte: from, $lte: to } }, // Filter by date range
-                { tags: { $in: tags ? tags.split(',') : [] } } // Filter by tags if provided
-            ]
-        }).
-        sort({ updatedAt: -1 }). // Sort by most recent updates;
-        populate('userId', 'firstName lastName username avatarUrl').
-        execPopulate();
+        
+        const journals = await Journal.find(searchQuery)
+            .sort({ updatedAt: -1 }) // Sort by most recent updates
+            .populate('userId', 'firstName lastName username avatarUrl');
+            
         if (journals.length === 0) {
             return res.status(404).json({ message: "No journals found" });
         }
+        
         journals.forEach(journal => {
             journal.createdAt = new Date(journal.createdAt).getTime();
             journal.updatedAt = new Date(journal.updatedAt).getTime();
@@ -137,13 +144,25 @@ export const searchJournals = async (req, res) => {
 
 export const addTags = async (req, res) => {
     try {
-        const { id } = req.params;
-        const { tags } = req.body;
-        const journal = await Journal.findById(id);
+        const { journalId, tags } = req.body;
+        if (!journalId || !tags || !Array.isArray(tags)) {
+            return res.status(400).json({ message: "journalId and tags array are required" });
+        }
+        
+        const journal = await Journal.findById(journalId);
         if (!journal) {
             return res.status(404).json({ message: "Journal not found" });
         }
-        journal.tags.push(...tags);
+        
+        if (journal.userId.toString() !== req.user.userId) {
+            return res.status(403).json({ message: "Access denied" });
+        }
+        
+        // Add new tags (avoid duplicates)
+        const existingTags = journal.tags || [];
+        const newTags = tags.filter(tag => !existingTags.includes(tag));
+        journal.tags = [...existingTags, ...newTags];
+        
         await journal.save();
         const version = new Version({
             journalId: journal._id,
@@ -152,6 +171,7 @@ export const addTags = async (req, res) => {
             tags: journal.tags,
         });
         await version.save();
+        
         journal.createdAt = new Date(journal.createdAt).getTime();
         journal.updatedAt = new Date(journal.updatedAt).getTime();
         res.status(200).json({
@@ -168,12 +188,20 @@ export const addTags = async (req, res) => {
 
 export const removeTags = async (req, res) => {
     try {
-        const { id } = req.params;
-        const { tags } = req.body;
-        const journal = await Journal.findById(id);
+        const { journalId, tags } = req.body;
+        if (!journalId || !tags || !Array.isArray(tags)) {
+            return res.status(400).json({ message: "journalId and tags array are required" });
+        }
+        
+        const journal = await Journal.findById(journalId);
         if (!journal) {
             return res.status(404).json({ message: "Journal not found" });
         }
+        
+        if (journal.userId.toString() !== req.user.userId) {
+            return res.status(403).json({ message: "Access denied" });
+        }
+        
         journal.tags = journal.tags.filter(tag => !tags.includes(tag));
         await journal.save();
         const version = new Version({
