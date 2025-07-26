@@ -963,6 +963,12 @@ async function runAgent(agentName, message, userContext = null) {
             }
         }
         
+        // Ensure backendTools is always available for tool execution
+        if (!backendTools) {
+            backendTools = new BackendTools();
+            console.log("⚠️ Creating backendTools without authentication context");
+        }
+        
         // Load agent-specific prompts (next-generation optimization)
         const nextGenPrompts = {
             'supervisor': 'supervisor_nextgen.md',
@@ -1004,37 +1010,70 @@ async function runAgent(agentName, message, userContext = null) {
             
             // Agent-specific tool assignments
             if (agentName === 'tags') {
-                enhancedPrompt += `**Tags Management:**\n`;
+                enhancedPrompt += `**Tags Management Tools (EXECUTE THESE IMMEDIATELY):**\n`;
                 enhancedPrompt += `- add_tags: ${toolDescriptions.add_tags}\n`;
                 enhancedPrompt += `- remove_tags: ${toolDescriptions.remove_tags}\n`;
                 enhancedPrompt += `- search_journals: ${toolDescriptions.search_journals}\n`;
                 enhancedPrompt += `- get_journal: ${toolDescriptions.get_journal}\n\n`;
-                enhancedPrompt += `Use these tools to analyze journal content and add relevant contextual tags.\n`;
+                enhancedPrompt += `**CRITICAL FOR TAGS AGENT: DO NOT SUGGEST TAGS - ADD THEM DIRECTLY!**\n`;
+                enhancedPrompt += `1. When given journal content, immediately analyze and add relevant tags using add_tags tool\n`;
+                enhancedPrompt += `2. When given a journal ID, fetch it with get_journal then add appropriate tags\n`;
+                enhancedPrompt += `3. Always execute add_tags tool - never just suggest what tags should be added\n`;
+                enhancedPrompt += `4. Your response should confirm what tags were actually added, not what could be added\n`;
+                enhancedPrompt += `5. Keep your response under 50 words confirming the action taken\n\n`;
             } else if (agentName === 'retrieval') {
-                enhancedPrompt += `**Memory & Retrieval:**\n`;
+                enhancedPrompt += `**Memory & Retrieval Tools (EXECUTE THESE ACTIVELY):**\n`;
                 enhancedPrompt += `- search_memories: ${toolDescriptions.search_memories}\n`;
                 enhancedPrompt += `- get_memories_by_type: ${toolDescriptions.get_memories_by_type}\n`;
                 enhancedPrompt += `- get_user_memories: ${toolDescriptions.get_user_memories}\n`;
                 enhancedPrompt += `- search_journals: ${toolDescriptions.search_journals}\n`;
                 enhancedPrompt += `- search_chat_history: ${toolDescriptions.search_chat_history}\n\n`;
-                enhancedPrompt += `Use these tools to find relevant information from past journals, memories, and conversations.\n`;
+                enhancedPrompt += `**CRITICAL FOR RETRIEVAL AGENT: ACTIVELY SEARCH - DON'T ASSUME!**\n`;
+                enhancedPrompt += `1. When user asks about information, immediately search all relevant databases\n`;
+                enhancedPrompt += `2. Use search_memories to find RAG information, search_journals for journal content\n`;
+                enhancedPrompt += `3. Always execute search tools to provide specific, accurate results from actual data\n`;
+                enhancedPrompt += `4. Report exactly what you found in the databases, including tags and specific content\n`;
+                enhancedPrompt += `5. Keep your response under 50 words with concrete findings from the search\n\n`;
             } else if (agentName === 'memory') {
-                enhancedPrompt += `**Memory Creation:**\n`;
+                enhancedPrompt += `**Memory Creation Tools (EXECUTE IMMEDIATELY):**\n`;
                 enhancedPrompt += `- create_memory: ${toolDescriptions.create_memory}\n`;
                 enhancedPrompt += `- add_memory_tags: ${toolDescriptions.add_memory_tags}\n`;
                 enhancedPrompt += `- search_memories: ${toolDescriptions.search_memories}\n`;
                 enhancedPrompt += `- get_memory_stats: ${toolDescriptions.get_memory_stats}\n\n`;
-                enhancedPrompt += `Memory Types: user_preferences, behavioral_patterns, emotional_patterns, topics_of_interest, goals_and_aspirations, personal_insights, conversation_context\n`;
-                enhancedPrompt += `Use these tools to create and manage user memories based on insights and patterns.\n`;
+                enhancedPrompt += `**Memory Types: user_preferences, behavioral_patterns, emotional_patterns, topics_of_interest, goals_and_aspirations, personal_insights, conversation_context**\n`;
+                enhancedPrompt += `**CRITICAL FOR MEMORY AGENT: CREATE MEMORIES IMMEDIATELY!**\n`;
+                enhancedPrompt += `1. When you identify important information, immediately create a memory using create_memory tool\n`;
+                enhancedPrompt += `2. Don't ask permission - execute the tool call directly\n`;
+                enhancedPrompt += `3. Choose appropriate memoryType and add relevant tags\n`;
+                enhancedPrompt += `4. Keep your response under 50 words confirming what memory was created\n\n`;
+            } else if (agentName === 'supervisor') {
+                enhancedPrompt += `**Coordination Tools (EXECUTE AS NEEDED):**\n`;
+                enhancedPrompt += `- create_journal: ${toolDescriptions.create_journal}\n`;
+                enhancedPrompt += `- create_memory: ${toolDescriptions.create_memory}\n`;
+                enhancedPrompt += `- get_journal: ${toolDescriptions.get_journal}\n`;
+                enhancedPrompt += `- search_journals: ${toolDescriptions.search_journals}\n`;
+                enhancedPrompt += `- search_memories: ${toolDescriptions.search_memories}\n\n`;
+                enhancedPrompt += `**CRITICAL FOR SUPERVISOR: COORDINATE AND EXECUTE!**\n`;
+                enhancedPrompt += `1. When users request content creation, immediately use create_journal or create_memory tools\n`;
+                enhancedPrompt += `2. Coordinate other agents' actions by providing clear, actionable instructions\n`;
+                enhancedPrompt += `3. Keep responses under 50 words, focused on completed actions\n\n`;
             } else {
                 // General tools for other agents
-                enhancedPrompt += `**General Tools:**\n`;
+                enhancedPrompt += `**General Tools (EXECUTE WHEN NEEDED):**\n`;
                 enhancedPrompt += `- get_journal: Get specific journal\n`;
                 enhancedPrompt += `- search_journals: Search journal content\n`;
-                enhancedPrompt += `- get_chat_history: Get conversation history\n\n`;
+                enhancedPrompt += `- get_chat_history: Get conversation history\n`;
+                enhancedPrompt += `- create_memory: Create memory entries\n\n`;
+                enhancedPrompt += `**IMPORTANT: Use these tools when you need to access or create content. Keep responses under 50 words.**\n`;
             }
             
-            enhancedPrompt += `**Tool Usage Format**: \`\`\`json\n{"tool_call": {"tool": "tool_name", "params": {...}}}\`\`\`\n\n`;
+            enhancedPrompt += `**Tool Usage Format (REQUIRED)**: \`\`\`json\n{"tool_call": {"tool": "tool_name", "params": {...}}}\`\`\`\n\n`;
+            enhancedPrompt += `**UNIVERSAL RESPONSE REQUIREMENTS:**\n`;
+            enhancedPrompt += `1. Execute tools immediately when needed - don't ask permission\n`;
+            enhancedPrompt += `2. Keep ALL responses concise: maximum 50 words\n`;
+            enhancedPrompt += `3. Focus on actions taken, not suggestions or possibilities\n`;
+            enhancedPrompt += `4. Report concrete results from tool execution\n`;
+            enhancedPrompt += `5. Use active voice: "Added tags: X, Y, Z" not "You could add tags"\n\n`;
         }
         
         // Implement retry mechanism with timeout and optimization
@@ -1053,7 +1092,7 @@ async function runAgent(agentName, message, userContext = null) {
                         }
                     ],
                     temperature: 0.6, // Slightly lower for consistency
-                    max_tokens: 500, // Optimized for faster response
+                    max_tokens: 150, // Reduced from 500 to enforce concise responses
                 });
 
                 const timeoutPromise = new Promise((_, reject) => {
@@ -1066,10 +1105,14 @@ async function runAgent(agentName, message, userContext = null) {
                 // Quick tool execution (with timeout)
                 if (backendTools && agentResponse.includes('"tool_call"')) {
                     try {
+                        console.log(`🔧 Detected tool call in ${agentName} response`);
                         const toolCallMatch = agentResponse.match(/json\s*(\{[\s\S]*?"tool_call"[\s\S]*?\})\s*/);
                         if (toolCallMatch) {
                             const toolCallData = JSON.parse(toolCallMatch[1]);
                             if (toolCallData.tool_call) {
+                                console.log(`🛠️ Executing tool: ${toolCallData.tool_call.tool}`);
+                                console.log(`📋 Tool params:`, toolCallData.tool_call.params);
+                                
                                 // Execute tool with timeout
                                 const toolPromise = backendTools.executeTool(
                                     toolCallData.tool_call.tool, 
@@ -1080,6 +1123,7 @@ async function runAgent(agentName, message, userContext = null) {
                                 });
                                 
                                 const toolResult = await Promise.race([toolPromise, toolTimeoutPromise]);
+                                console.log(`✅ Tool execution result:`, toolResult);
                                 
                                 // Quick follow-up response
                                 const followUpPromise = client.chat.completions.create({
@@ -1087,15 +1131,15 @@ async function runAgent(agentName, message, userContext = null) {
                                     messages: [
                                         {
                                             role: "system",
-                                            content: "Provide a brief response based on the tool result."
+                                            content: "Provide a brief response based on the tool result. Maximum 50 words. Focus on what was accomplished."
                                         },
                                         {
                                             role: "user",
-                                            content: `Tool result: ${JSON.stringify(toolResult)}\n\nBrief response (max 50 words):`
+                                            content: `Tool result: ${JSON.stringify(toolResult)}\n\nBrief response confirming action taken (max 50 words):`
                                         }
                                     ],
                                     temperature: 0.6,
-                                    max_tokens: 200,
+                                    max_tokens: 100, // Reduced from 200 for conciseness
                                 });
                                 
                                 const followUpTimeoutPromise = new Promise((_, reject) => {
