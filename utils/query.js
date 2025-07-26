@@ -53,7 +53,7 @@ async function executeAgentWorkflow(userMessage, res) {
         // Step 1: Start with supervisor agent
         res.write(`data: ${JSON.stringify({ 
             status: 'workflow_started', 
-            chunk: 'Supervisor agent analyzing request...' 
+            chunk: '<start>Supervisor agent analyzing request...</start>' 
         })}\n\n`);
         
         let supervisorResponse = await runAgent('supervisor', currentMessage);
@@ -74,7 +74,7 @@ async function executeAgentWorkflow(userMessage, res) {
             res.write(`data: ${JSON.stringify({ 
                 status: 'iteration', 
                 count: iterationCount,
-                chunk: 'Supervisor coordinating agents...' 
+                chunk: '<start>Supervisor coordinating agents...</start>' 
             })}\n\n`);
             
             // Check if supervisor indicates completion
@@ -92,7 +92,7 @@ async function executeAgentWorkflow(userMessage, res) {
                 res.write(`data: ${JSON.stringify({ 
                     status: 'agent_selected', 
                     agent: selectedAgent,
-                    chunk: `${selectedAgent} agent processing task...` 
+                    chunk: `<start>${selectedAgent} agent processing task...</start>` 
                 })}\n\n`);
                 
                 // Execute the selected agent
@@ -101,7 +101,7 @@ async function executeAgentWorkflow(userMessage, res) {
                 // Step 3: Monitor agent evaluates the response
                 res.write(`data: ${JSON.stringify({ 
                     status: 'monitoring', 
-                    chunk: 'Monitor agent evaluating response quality...' 
+                    chunk: '<start>Monitor agent evaluating response quality...</start>' 
                 })}\n\n`);
                 
                 const monitorResponse = await runAgent('monitor', 
@@ -127,7 +127,7 @@ async function executeAgentWorkflow(userMessage, res) {
                     res.write(`data: ${JSON.stringify({ 
                         status: 'retry_required', 
                         satisfaction: satisfactionScore,
-                        chunk: 'Response quality insufficient, requesting improvement...' 
+                        chunk: '<start>Response quality insufficient, requesting improvement...</start>' 
                     })}\n\n`);
                     
                     const improvementFeedback = monitorData?.feedback || 'Please improve the response quality and completeness.';
@@ -145,7 +145,7 @@ async function executeAgentWorkflow(userMessage, res) {
                         status: 'agent_completed', 
                         agent: selectedAgent,
                         satisfaction: satisfactionScore,
-                        chunk: 'Agent task completed successfully' 
+                        chunk: '<complete>Agent task completed successfully</complete>' 
                     })}\n\n`);
                     
                     supervisorResponse = await runAgent('supervisor', 
@@ -180,7 +180,7 @@ async function executeAgentWorkflow(userMessage, res) {
         console.error("Error in agent workflow:", error);
         res.write(`data: ${JSON.stringify({ 
             status: 'error', 
-            chunk: 'Workflow error occurred, falling back to direct response' 
+            chunk: '<error>Workflow error occurred, falling back to direct response</error>' 
         })}\n\n`);
         
         // Fallback to direct LLM response
@@ -282,7 +282,7 @@ export const queryStream = async (message, res) => {
         // First, provide the initial response via streaming
         res.write(`data: ${JSON.stringify({ 
             status: 'initial_response_start', 
-            chunk: 'Generating initial response...' 
+            chunk: '<start>Generating initial response...</start>' 
         })}\n\n`);
         
         const stream = await client.chat.completions.create({
@@ -310,7 +310,7 @@ export const queryStream = async (message, res) => {
         // Signal completion of initial response
         res.write(`data: ${JSON.stringify({ 
             status: 'initial_response_complete',
-            chunk: 'Initial response completed. Starting agent workflow...' 
+            chunk: '<complete>Initial response completed.</complete> <start>Starting agent workflow...</start>' 
         })}\n\n`);
 
         // After initial response is complete, run the agent workflow
@@ -321,7 +321,7 @@ export const queryStream = async (message, res) => {
             res.write(`data: ${JSON.stringify({ 
                 status: 'workflow_complete',
                 enhanced_response: agentWorkflowResult,
-                chunk: 'Agent workflow completed successfully' 
+                chunk: '<complete>Agent workflow completed successfully</complete>' 
             })}\n\n`);
             
             // Return the original response for now, enhanced response is sent via stream
@@ -332,7 +332,7 @@ export const queryStream = async (message, res) => {
             res.write(`data: ${JSON.stringify({ 
                 status: 'workflow_error',
                 error: workflowError.message,
-                chunk: 'Agent workflow encountered an error, using initial response' 
+                chunk: '<error>Agent workflow encountered an error, using initial response</error>' 
             })}\n\n`);
             
             return fullText;
