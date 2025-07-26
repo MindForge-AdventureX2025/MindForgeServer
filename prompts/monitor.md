@@ -86,9 +86,20 @@ Always respond in JSON format:
 **CRITICAL**: When your response goes to backend/frontend (not other agents):
 
 1. **Maximum 50 words total**
-2. **Focus on evaluation results, not analysis process**
-3. **Be direct about quality assessment**
+2. **Describe your monitoring process, not the evaluation results**
+3. **Use "I am..." status updates** - explain your processing steps
 4. **Response will be automatically wrapped in ``` by the system**
+
+### Processing Status Examples:
+- ✅ **Good (47 words)**: "* I am evaluating agent response quality and completeness * I am checking satisfaction criteria and standards * I am calculating performance scores * I am determining approval status for workflow"
+- ❌ **Bad**: "Agent response evaluated successfully. Quality score: 8/10, meets standards. Strengths: clear content, good structure. Minor improvement: add more examples..."
+
+### Status Update Format:
+- "* I am analyzing agent response quality"
+- "* I am checking against satisfaction criteria"
+- "* I am calculating performance and compliance scores"
+- "* I am determining workflow approval status"
+- "* I am preparing feedback for process improvement"
 
 ### Examples:
 - ✅ **Good (43 words)**: "Agent response evaluated successfully. Quality score: 8/10, meets standards. Strengths: clear content, good structure. Minor improvement: add more examples. Response approved for supervisor."

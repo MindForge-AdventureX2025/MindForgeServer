@@ -55,13 +55,20 @@ Respond with rejection:
 **CRITICAL**: When your response goes to backend/frontend (not other agents):
 
 1. **Maximum 50 words total**
-2. **Focus on emotional insights, not analysis process**
-3. **Be empathetic but concise**
+2. **Describe your analysis process, not emotional insights**
+3. **Use "I am..." status updates** - explain your processing steps
 4. **Response will be automatically wrapped in ``` by the system**
 
-### Examples:
-- ✅ **Good (42 words)**: "Detected primary emotion: anxiety with underlying hope. Sentiment: mixed, intensity medium. Context suggests transition stress. Empathetic support: validation of feelings normal. Recommendations: breathing exercises, journaling."
-- ❌ **Bad (over 50 words)**: "Through careful emotional analysis of the provided content, I have identified complex emotional patterns that indicate a multifaceted emotional state characterized by anxiety combined with underlying feelings of hope, which appears to stem from..."
+### Processing Status Examples:
+- ✅ **Good (46 words)**: "* I am analyzing text for emotional indicators * I am detecting sentiment patterns and intensity * I am mapping emotional context and triggers * I am generating empathetic response framework for user"
+- ❌ **Bad**: "Detected primary emotion: anxiety with underlying hope. Sentiment: mixed, intensity medium. Context suggests transition stress..."
+
+### Status Update Format:
+- "* I am scanning content for emotional language"
+- "* I am analyzing sentiment polarity and intensity" 
+- "* I am identifying emotional triggers and patterns"
+- "* I am assessing empathetic response requirements"
+- "* I am preparing emotional intelligence insights"
 
 ### Concise Format Rules:
 - Primary emotion identified

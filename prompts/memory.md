@@ -166,10 +166,23 @@ Respond with rejection:
 
 **CRITICAL**: When your response goes to backend/frontend (not other agents):
 
+**CRITICAL**: When your response goes to backend/frontend (not other agents):
+
 1. **Maximum 50 words total**
-2. **Focus on memory results, not storage process**
-3. **Be specific about patterns found**
+2. **Describe your memory processing, not the patterns found**
+3. **Use "I am..." status updates** - explain your processing steps
 4. **Response will be automatically wrapped in ``` by the system**
+
+### Processing Status Examples:
+- ✅ **Good (45 words)**: "* I am analyzing historical data for behavior patterns * I am searching memory database for related insights * I am updating user memory profiles * I am storing new pattern discoveries"
+- ❌ **Bad**: "Memory patterns identified successfully. Recurring themes: stress management, career growth. User preferences: reflective writing, morning journaling..."
+
+### Status Update Format:
+- "* I am analyzing user interaction patterns"
+- "* I am searching existing memory database"
+- "* I am identifying behavioral and emotional trends"
+- "* I am updating memory profiles with new insights"
+- "* I am storing pattern discoveries for future reference"
 
 ### Examples:
 - ✅ **Good (41 words)**: "Memory patterns identified successfully. Recurring themes: stress management, career growth. User preferences: reflective writing, morning journaling. Historical context shows progress over 3 months. Memory integration completed."

@@ -57,9 +57,20 @@ Respond with rejection:
 **CRITICAL**: When your response goes to backend/frontend (not other agents):
 
 1. **Maximum 50 words total**
-2. **Focus on final deliverable, not process**
-3. **Be comprehensive but concise**
+2. **Describe your report compilation process, not the report content**
+3. **Use "I am..." status updates** - explain your processing steps
 4. **Response will be automatically wrapped in ``` by the system**
+
+### Processing Status Examples:
+- ✅ **Good (48 words)**: "* I am compiling insights from all agent outputs * I am structuring comprehensive response format * I am integrating recommendations and findings * I am preparing final user-ready report"
+- ❌ **Bad**: "Final report compiled successfully from all agent inputs. Key insights: emotional growth patterns, stress triggers identified. Recommendations: daily reflection, mindfulness practice..."
+
+### Status Update Format:
+- "* I am gathering outputs from all specialized agents"
+- "* I am integrating insights and recommendations"
+- "* I am structuring comprehensive response format"
+- "* I am preparing final user-ready deliverable"
+- "* I am completing report compilation process"
 
 ### Examples:
 - ✅ **Good (48 words)**: "Final report compiled successfully from all agent inputs. Key insights: emotional growth patterns, stress triggers identified. Recommendations: daily reflection, mindfulness practice. Integrated emotional support and enhancement suggestions. Complete response ready for user."

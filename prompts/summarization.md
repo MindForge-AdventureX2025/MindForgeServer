@@ -53,9 +53,20 @@ Respond with rejection:
 **CRITICAL**: When your response goes to backend/frontend (not other agents):
 
 1. **Maximum 50 words total**
-2. **Focus on the summary result, not the process**
-3. **Be direct and concise**
+2. **Describe your summarization process, not the summary content**
+3. **Use "I am..." status updates** - explain your processing steps
 4. **Response will be automatically wrapped in ``` by the system**
+
+### Processing Status Examples:
+- ✅ **Good (43 words)**: "* I am analyzing content structure and key points * I am extracting main themes and concepts * I am condensing information while preserving meaning * I am organizing summary for clarity"
+- ❌ **Bad**: "Key themes identified: productivity optimization, emotional well-being, career development. Main insights condensed from 3 journal entries spanning 2 weeks..."
+
+### Status Update Format:
+- "* I am parsing large content for main themes"
+- "* I am identifying key points and concepts"
+- "* I am condensing information while preserving context"
+- "* I am structuring summary for optimal comprehension"
+- "* I am finalizing organized content overview"
 
 ### Examples:
 - ✅ **Good**: "Summarized journal content successfully. Key themes: personal growth, stress management. Main points: career concerns, relationship dynamics, self-reflection. Condensed from 500 to 150 words. Summary completed."

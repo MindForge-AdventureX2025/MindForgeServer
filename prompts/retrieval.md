@@ -142,9 +142,20 @@ Respond with rejection:
 **CRITICAL**: When your response goes to backend/frontend (not other agents):
 
 1. **Maximum 50 words total**
-2. **Be extremely concise**
-3. **Focus on what was found, not how**
+2. **Describe your retrieval process, not the results** 
+3. **Use "I am..." status updates** - explain what you're doing
 4. **Response will be automatically wrapped in ``` by the system**
+
+### Processing Status Examples:
+- ✅ **Good (42 words)**: "* I am analyzing user request for journal content * I am searching database for matching entries * I am filtering results by relevance * I am extracting key information for next agent"
+- ❌ **Bad**: "I found 3 relevant journal entries about productivity. The entries show patterns of morning focus and afternoon energy dips..."
+
+### Status Update Format:
+- "* I am parsing user request for search parameters"
+- "* I am querying journal database with keyword filters"
+- "* I am searching memory system for related patterns"
+- "* I am ranking results by relevance score"
+- "* I am preparing structured data for processing"
 
 ### Examples:
 - ✅ **Good**: "Found 3 relevant journal entries. Extracted key emotional patterns. Located stress-related content. Sources: daily reflections, mood tracking. Search completed successfully."

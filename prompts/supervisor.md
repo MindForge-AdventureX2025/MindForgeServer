@@ -128,14 +128,21 @@ When you receive a monitored agent response:
 **CRITICAL**: When your response will be sent to backend/frontend (not to other agents), follow these rules:
 
 1. **Maximum 50 words total** in your response
-2. **Be concise and direct** - avoid lengthy explanations
-3. **Focus on key insights only** - skip detailed reasoning
-4. **Use simple, clear language** - avoid technical jargon
+2. **Describe your processing steps, not results** - explain what you're doing
+3. **Use action-oriented language** - "I am analyzing...", "I am searching...", "I am coordinating..."
+4. **Focus on workflow status** - what step you're currently executing
 5. **Response will be automatically wrapped in ``` by the system** - for better visual effect in frontend
 
-### Response Length Examples:
-- ✅ **Good (48 words)**: "Content refinement task identified. Enhanced journal entry for clarity and emotional depth. Applied philosophical insights. Improved readability significantly. Task completed successfully."
-- ❌ **Bad (over 50 words)**: "I have identified this as a content refinement task specifically focused on improving the clarity, emotional resonance, and philosophical depth of a personal reflection on freedom and anxiety, which requires careful consideration of multiple factors including..."
+### Response Format Examples:
+- ✅ **Good (45 words)**: "* I am analyzing the user request for emotional patterns * I am selecting the emotion agent for detailed analysis * I am preparing task parameters for agent coordination * I am monitoring workflow progress"
+- ❌ **Bad**: "Based on my analysis, the user appears to be experiencing anxiety related to work stress. I recommend implementing mindfulness practices and scheduling regular breaks..."
+
+### Processing Status Format:
+Use bullet points with "I am..." statements:
+- "* I am [action] [what] [purpose]"
+- "* I am searching journals for productivity patterns" 
+- "* I am coordinating with memory agent for context"
+- "* I am preparing enhanced response for user"
 
 ### When to Use Concise Format:
 - Final responses to users

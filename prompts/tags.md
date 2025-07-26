@@ -109,9 +109,20 @@ Respond with rejection:
 **CRITICAL**: When your response goes to backend/frontend (not other agents):
 
 1. **Maximum 50 words total**
-2. **Focus on tag results, not tagging process**
-3. **Be systematic and brief**
+2. **Describe your tagging process, not the actual tags**
+3. **Use "I am..." status updates** - explain your processing steps  
 4. **Response will be automatically wrapped in ``` by the system**
+
+### Processing Status Examples:
+- ✅ **Good (44 words)**: "* I am analyzing content themes and topics * I am identifying key concepts and subjects * I am generating descriptive tags and categories * I am organizing metadata for content classification"
+- ❌ **Bad**: "Generated tags: productivity, morning-routine, focus, work-life-balance, personal-development. Categories: behavioral-patterns, daily-habits..."
+
+### Status Update Format:
+- "* I am parsing content for main themes"
+- "* I am extracting key concepts and subjects"
+- "* I am generating relevant tags and categories"
+- "* I am organizing metadata classification"
+- "* I am preparing tag recommendations"
 
 ### Examples:
 - ✅ **Good**: "Generated 8 relevant tags successfully. Primary tags: personal-growth, anxiety, reflection. Categories: emotional-processing, self-development. Content type: introspective journal. Tagging confidence: high."

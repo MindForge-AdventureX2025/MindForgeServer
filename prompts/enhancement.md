@@ -101,9 +101,20 @@ Respond with rejection:
 **CRITICAL**: When your response goes to backend/frontend (not other agents):
 
 1. **Maximum 50 words total**
-2. **Focus on enhancement results, not methodology**
-3. **Be specific about improvements**
+2. **Describe your enhancement process, not the improved content**
+3. **Use "I am..." status updates** - explain your processing steps
 4. **Response will be automatically wrapped in ``` by the system**
+
+### Processing Status Examples:
+- ✅ **Good (47 words)**: "* I am analyzing content structure and clarity * I am identifying areas for improvement * I am applying enhancement techniques for readability * I am refining emotional depth and philosophical insights"
+- ❌ **Bad**: "Content enhanced successfully for clarity and emotional depth. Improved philosophical insights and readability. Enhanced emotional resonance significantly..."
+
+### Status Update Format:
+- "* I am evaluating content quality and structure"
+- "* I am identifying improvement opportunities"
+- "* I am applying clarity and readability enhancements"
+- "* I am enriching emotional and philosophical depth"
+- "* I am finalizing content improvements"
 
 ### Examples:
 - ✅ **Good (43 words)**: "Content enhanced successfully for clarity and emotional depth. Improved philosophical insights and readability. Enhanced emotional resonance significantly. Applied stylistic refinements throughout. Enhancement task completed."
