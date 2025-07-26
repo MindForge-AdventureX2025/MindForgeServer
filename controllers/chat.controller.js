@@ -90,15 +90,15 @@ export const updateChat = async (req, res) => {
     console.log(req.body);
     const { message, selected = "", journalIds = [] } =  req.body;
     let originalChat = await Chat.findById(id);
+    if (!originalChat) {
+      res.write(`event: error\ndata: ${JSON.stringify({ error: error.message })}\n\n`);
+    }
     originalChat.messages.push({
       sender: "user",
       content: message,
       timestamp: new Date(),
     });
     // await originalChat.save();
-    if (!originalChat) {
-      res.write(`event: error\ndata: ${JSON.stringify({ error: error.message })}\n\n`);
-    }
     let requestMessages = message;
     if (journalIds && journalIds.length > 0) {
       requestMessages += "\n\nfollowing is the Journal that I would like to reference: {\n";
