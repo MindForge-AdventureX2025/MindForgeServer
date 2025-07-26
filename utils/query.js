@@ -663,6 +663,38 @@ function processStructuredResponse(agentResponse) {
     }
 }
 
+// Clean response for backend consumption (remove JSON and code blocks)
+function cleanResponseForBackend(agentResponse) {
+    let cleanedResponse = agentResponse;
+    
+    // Remove JSON code blocks
+    cleanedResponse = cleanedResponse.replace(/```json[\s\S]*?```/g, '');
+    
+    // Remove general code blocks
+    cleanedResponse = cleanedResponse.replace(/```[\s\S]*?```/g, '');
+    
+    // Remove inline code
+    cleanedResponse = cleanedResponse.replace(/`[^`]+`/g, (match) => {
+        // Keep hashtags but remove other inline code
+        if (match.match(/`#[\w-]+`/)) {
+            return match.replace(/`/g, '');
+        }
+        return '';
+    });
+    
+    // Remove JSON objects/arrays (simple detection)
+    cleanedResponse = cleanedResponse.replace(/\{[^{}]*"[^"]*"[^{}]*\}/g, '');
+    cleanedResponse = cleanedResponse.replace(/\[[^\[\]]*"[^"]*"[^\[\]]*\]/g, '');
+    
+    // Clean up extra whitespace
+    cleanedResponse = cleanedResponse.replace(/\s+/g, ' ').trim();
+    
+    // Remove empty lines
+    cleanedResponse = cleanedResponse.replace(/\n\s*\n/g, '\n');
+    
+    return cleanedResponse;
+}
+
 // Execute backend actions based on structured data
 async function executeBackendActions(structuredData, userContext) {
     if (!structuredData || !structuredData.actions) {
@@ -793,7 +825,7 @@ async function executeAgentWorkflow(userMessage, res, userContext = null) {
             chunk: '<start>Coordinator analyzing request...</start>.' 
         })}\n\n`);
         
-        let supervisorResponse = await runAgent('supervisor', currentMessage, userContext);
+        let supervisorResponse = await runAgent('supervisor', currentMessage, userContext, false);
         let supervisorData;
         
         try {
@@ -857,7 +889,8 @@ async function executeAgentWorkflow(userMessage, res, userContext = null) {
                 
                 const monitorResponse = await runAgent('monitor', 
                     `Agent: ${selectedAgent}\nTask: ${agentTask}\nResponse: ${displayResponse}\n\nEvaluate this response and provide satisfaction index (1-10). If satisfaction < 7, provide improvement feedback.`,
-                    userContext
+                    userContext,
+                    false // Keep JSON for monitor evaluation
                 );
                 
                 let monitorData;
@@ -901,7 +934,8 @@ async function executeAgentWorkflow(userMessage, res, userContext = null) {
                     // Send improved response back to supervisor
                     supervisorResponse = await runAgent('supervisor', 
                         `Previous Plan: ${JSON.stringify(supervisorData)}\n\nAgent: ${selectedAgent}\nCompleted Task: ${agentTask}\nFinal Response: ${finalImprovedResponse}\n\nEvaluate mission completion and decide next steps.`,
-                        userContext
+                        userContext,
+                        false // Keep JSON for supervisor coordination
                     );
                 } else {
                     // Step 4: Send successful response back to supervisor
@@ -914,7 +948,8 @@ async function executeAgentWorkflow(userMessage, res, userContext = null) {
                     
                     supervisorResponse = await runAgent('supervisor', 
                         `Previous Plan: ${JSON.stringify(supervisorData)}\n\nAgent: ${selectedAgent}\nCompleted Task: ${agentTask}\nResponse: ${displayResponse}\n\nEvaluate mission completion and decide next steps.`,
-                        userContext
+                        userContext,
+                        false // Keep JSON for supervisor coordination
                     );
                 }
                 
@@ -954,7 +989,7 @@ async function executeAgentWorkflow(userMessage, res, userContext = null) {
 }
 
 // Helper function to run individual agents with performance optimizations
-async function runAgent(agentName, message, userContext = null) {
+async function runAgent(agentName, message, userContext = null, cleanForBackend = true) {
     const AGENT_TIMEOUT = 8000; // 8 seconds max per agent
     const MAX_RETRIES = 2;
     
@@ -1176,8 +1211,11 @@ async function runAgent(agentName, message, userContext = null) {
                         const actionResults = await executeBackendActions(processedResponse.structuredData, userContext);
                         
                         // Return both user response and action results for internal processing
+                        const finalUserResponse = cleanForBackend ? 
+                            cleanResponseForBackend(processedResponse.userResponse) : 
+                            processedResponse.userResponse;
                         return {
-                            userResponse: `\`\`\`\n${processedResponse.userResponse}\n\`\`\``,
+                            userResponse: finalUserResponse,
                             actionResults: actionResults,
                             hasActions: true,
                             originalResponse: agentResponse
@@ -1185,8 +1223,11 @@ async function runAgent(agentName, message, userContext = null) {
                     } catch (actionError) {
                         console.error(`Error executing backend actions:`, actionError);
                         // Return just the user response if actions fail
+                        const finalUserResponse = cleanForBackend ? 
+                            cleanResponseForBackend(processedResponse.userResponse) : 
+                            processedResponse.userResponse;
                         return {
-                            userResponse: `\`\`\`\n${processedResponse.userResponse}\n\`\`\``,
+                            userResponse: finalUserResponse,
                             actionResults: null,
                             hasActions: false,
                             originalResponse: agentResponse
@@ -1195,14 +1236,14 @@ async function runAgent(agentName, message, userContext = null) {
                 }
                 
                 // Return simple response for backward compatibility
-                return `\`\`\`\n${agentResponse}\n\`\`\``;
+                return cleanForBackend ? cleanResponseForBackend(agentResponse) : agentResponse;
                 
             } catch (error) {
                 console.error(`${getAgentDisplayName(agentName)} attempt ${attempt} failed:`, error.message);
                 
                 if (attempt === MAX_RETRIES) {
                     // Final attempt failed, return optimized fallback response
-                    return `\`\`\`\n* I am experiencing technical difficulties\n* I am working to resolve this issue\n* Please try again\n\`\`\``;
+                    return "I am experiencing technical difficulties. I am working to resolve this issue. Please try again.";
                 }
                 
                 // Quick retry with exponential backoff
@@ -1212,7 +1253,7 @@ async function runAgent(agentName, message, userContext = null) {
         
     } catch (error) {
         console.error(`Error running ${getAgentDisplayName(agentName)}:`, error);
-        return `\`\`\`\n* I am encountering an error: ${error.message}\n* I am attempting recovery\n* Please try again\n\`\`\``;
+        return `I am encountering an error: ${error.message}. I am attempting recovery. Please try again.`;
     }
 }
 
@@ -1356,4 +1397,4 @@ export const queryStream = async (message, res, userContext = null) => {
 };
 
 // Export BackendTools for external use
-export { BackendTools, getAgentDisplayName, processStructuredResponse };
+export { BackendTools, getAgentDisplayName, processStructuredResponse, cleanResponseForBackend };
