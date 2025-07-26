@@ -43,6 +43,24 @@ const agents = {
     monitor: monitor_agent
 };
 
+// Agent name mapping for backend/logging (concise names to hide internal structure)
+const agentDisplayNames = {
+    supervisor: "coordinator",
+    retrieval: "search",
+    summarization: "summary", 
+    emotion: "empathy",
+    tags: "categorize",
+    enhancement: "improve",
+    memory: "context",
+    report: "analyze",
+    monitor: "track"
+};
+
+// Function to get display name for agent
+function getAgentDisplayName(agentName) {
+    return agentDisplayNames[agentName] || "processor";
+}
+
 // Backend API Tools for AI Agents
 class BackendTools {
     constructor(baseURL = `http://localhost:${process.env.PORT || 3000}`) {
@@ -487,7 +505,7 @@ async function executeAgentWorkflow(userMessage, res, userContext = null) {
         // Step 1: Start with supervisor agent
         res.write(`data: ${JSON.stringify({ 
             status: 'workflow_started', 
-            chunk: '<start><agent>Supervisor agent</agent> analyzing request...</start>' 
+            chunk: '<start><processor>Coordinator</processor> analyzing request...</start>' 
         })}\n\n`);
         
         let supervisorResponse = await runAgent('supervisor', currentMessage, userContext);
@@ -508,7 +526,7 @@ async function executeAgentWorkflow(userMessage, res, userContext = null) {
             res.write(`data: ${JSON.stringify({ 
                 status: 'iteration', 
                 count: iterationCount,
-                chunk: '<start><agent>Supervisor agent</agent> coordinating agents...</start>' 
+                chunk: '<start><processor>Coordinator</processor> coordinating tasks...</start>' 
             })}\n\n`);
             
             // Check if supervisor indicates completion
@@ -525,8 +543,8 @@ async function executeAgentWorkflow(userMessage, res, userContext = null) {
                 
                 res.write(`data: ${JSON.stringify({ 
                     status: 'agent_selected', 
-                    agent: selectedAgent,
-                    chunk: `<start><agent>${selectedAgent} agent</agent> processing task...</start>` 
+                    agent: getAgentDisplayName(selectedAgent),
+                    chunk: `<start><processor>${getAgentDisplayName(selectedAgent)}</processor> processing task...</start>` 
                 })}\n\n`);
                 
                 // Execute the selected agent
@@ -535,7 +553,7 @@ async function executeAgentWorkflow(userMessage, res, userContext = null) {
                 // Step 3: Monitor agent evaluates the response
                 res.write(`data: ${JSON.stringify({ 
                     status: 'monitoring', 
-                    chunk: '<start><agent>Monitor agent</agent> evaluating response quality...</start>' 
+                    chunk: '<start><processor>Quality Control</processor> evaluating response...</start>' 
                 })}\n\n`);
                 
                 const monitorResponse = await runAgent('monitor', 
@@ -580,9 +598,9 @@ async function executeAgentWorkflow(userMessage, res, userContext = null) {
                     // Step 4: Send successful response back to supervisor
                     res.write(`data: ${JSON.stringify({ 
                         status: 'agent_completed', 
-                        agent: selectedAgent,
+                        agent: getAgentDisplayName(selectedAgent),
                         satisfaction: satisfactionScore,
-                        chunk: '<complete>Agent task completed successfully</complete>' 
+                        chunk: '<complete>Task completed successfully</complete>' 
                     })}\n\n`);
                     
                     supervisorResponse = await runAgent('supervisor', 
@@ -634,7 +652,7 @@ async function runAgent(agentName, message, userContext = null) {
     try {
         const agent = agents[agentName];
         if (!agent) {
-            throw new Error(`Agent ${agentName} not found`);
+            throw new Error(`Processor ${getAgentDisplayName(agentName)} not found`);
         }
         
         // Initialize backend tools if user context is provided
@@ -652,7 +670,7 @@ async function runAgent(agentName, message, userContext = null) {
         try {
             agentPrompt = await readFile(agentPromptPath, "utf-8");
         } catch (e) {
-            agentPrompt = `You are the ${agentName} agent. Process the following request according to your role.`;
+            agentPrompt = `You are a specialized ${getAgentDisplayName(agentName)} processor. Handle the following request according to your role.`;
         }
 
         // Add tool information to agent prompt (optimized)
@@ -691,7 +709,7 @@ async function runAgent(agentName, message, userContext = null) {
                 });
 
                 const timeoutPromise = new Promise((_, reject) => {
-                    setTimeout(() => reject(new Error(`Agent ${agentName} timeout after ${AGENT_TIMEOUT}ms`)), AGENT_TIMEOUT);
+                    setTimeout(() => reject(new Error(`${getAgentDisplayName(agentName)} timeout after ${AGENT_TIMEOUT}ms`)), AGENT_TIMEOUT);
                 });
 
                 const response = await Promise.race([responsePromise, timeoutPromise]);
@@ -741,7 +759,7 @@ async function runAgent(agentName, message, userContext = null) {
                             }
                         }
                     } catch (toolError) {
-                        console.error(`Tool execution error for ${agentName}:`, toolError);
+                        console.error(`Tool execution error for ${getAgentDisplayName(agentName)}:`, toolError);
                         // Continue with original response
                     }
                 }
@@ -750,7 +768,7 @@ async function runAgent(agentName, message, userContext = null) {
                 return `\`\`\`\n${agentResponse}\n\`\`\``;
                 
             } catch (error) {
-                console.error(`Agent ${agentName} attempt ${attempt} failed:`, error.message);
+                console.error(`${getAgentDisplayName(agentName)} attempt ${attempt} failed:`, error.message);
                 
                 if (attempt === MAX_RETRIES) {
                     // Final attempt failed, return optimized fallback response
@@ -763,7 +781,7 @@ async function runAgent(agentName, message, userContext = null) {
         }
         
     } catch (error) {
-        console.error(`Error running agent ${agentName}:`, error);
+        console.error(`Error running ${getAgentDisplayName(agentName)}:`, error);
         return `\`\`\`\n* I am encountering an error: ${error.message}\n* I am attempting recovery\n* Please try again\n\`\`\``;
     }
 }
@@ -908,4 +926,4 @@ export const queryStream = async (message, res, userContext = null) => {
 };
 
 // Export BackendTools for external use
-export { BackendTools };
+export { BackendTools, getAgentDisplayName };
