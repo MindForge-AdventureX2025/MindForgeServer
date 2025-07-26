@@ -349,6 +349,98 @@ class BackendTools {
         }
     }
 
+    // Enhanced Journal Tools
+    async searchChatHistory(keyword, limit = 20, page = 1, dateFrom = null, dateTo = null) {
+        try {
+            const params = { keyword, limit, page };
+            if (dateFrom) params.from = dateFrom;
+            if (dateTo) params.to = dateTo;
+            
+            const response = await this.axiosInstance.get('/api/chats/search', { params });
+            return { success: true, data: response.data };
+        } catch (error) {
+            return { success: false, error: error.response?.data?.message || error.message };
+        }
+    }
+
+    async getMultipleJournals(journalIds) {
+        try {
+            const response = await this.axiosInstance.post('/api/journals/bulk', { ids: journalIds });
+            return { success: true, data: response.data };
+        } catch (error) {
+            return { success: false, error: error.response?.data?.message || error.message };
+        }
+    }
+
+    async partialUpdateJournal(id, selectedText, newText, operation = 'replace') {
+        try {
+            const response = await this.axiosInstance.patch(`/api/journals/${id}/partial`, {
+                selectedText,
+                newText,
+                operation // 'replace', 'insert_before', 'insert_after', 'append', 'prepend'
+            });
+            return { success: true, data: response.data };
+        } catch (error) {
+            return { success: false, error: error.response?.data?.message || error.message };
+        }
+    }
+
+    async bulkUpdateJournals(updates) {
+        try {
+            // updates: [{ id, selectedText?, newText?, operation? }]
+            const response = await this.axiosInstance.patch('/api/journals/bulk-update', { updates });
+            return { success: true, data: response.data };
+        } catch (error) {
+            return { success: false, error: error.response?.data?.message || error.message };
+        }
+    }
+
+    async analyzeJournalPatterns(journalIds, analysisType = 'mood') {
+        try {
+            const response = await this.axiosInstance.post('/api/journals/analyze', {
+                journalIds,
+                analysisType // 'mood', 'themes', 'progress', 'sentiment'
+            });
+            return { success: true, data: response.data };
+        } catch (error) {
+            return { success: false, error: error.response?.data?.message || error.message };
+        }
+    }
+
+    async getJournalsByDateRange(startDate, endDate, tags = null) {
+        try {
+            const params = { startDate, endDate };
+            if (tags) params.tags = tags;
+            
+            const response = await this.axiosInstance.get('/api/journals/date-range', { params });
+            return { success: true, data: response.data };
+        } catch (error) {
+            return { success: false, error: error.response?.data?.message || error.message };
+        }
+    }
+
+    async createJournalTemplate(name, structure, defaultContent = '') {
+        try {
+            const response = await this.axiosInstance.post('/api/journals/templates', {
+                name,
+                structure,
+                defaultContent
+            });
+            return { success: true, data: response.data };
+        } catch (error) {
+            return { success: false, error: error.response?.data?.message || error.message };
+        }
+    }
+
+    async getJournalTemplates() {
+        try {
+            const response = await this.axiosInstance.get('/api/journals/templates');
+            return { success: true, data: response.data };
+        } catch (error) {
+            return { success: false, error: error.response?.data?.message || error.message };
+        }
+    }
+
     // Tool execution function for AI agents
     async executeTool(toolName, params) {
         switch (toolName) {
@@ -376,6 +468,22 @@ class BackendTools {
             case 'delete_journal':
                 return await this.deleteJournal(params.id);
             
+            // Enhanced Journal tools
+            case 'get_multiple_journals':
+                return await this.getMultipleJournals(params.journalIds);
+            case 'partial_update_journal':
+                return await this.partialUpdateJournal(params.id, params.selectedText, params.newText, params.operation);
+            case 'bulk_update_journals':
+                return await this.bulkUpdateJournals(params.updates);
+            case 'analyze_journal_patterns':
+                return await this.analyzeJournalPatterns(params.journalIds, params.analysisType);
+            case 'get_journals_by_date_range':
+                return await this.getJournalsByDateRange(params.startDate, params.endDate, params.tags);
+            case 'create_journal_template':
+                return await this.createJournalTemplate(params.name, params.structure, params.defaultContent);
+            case 'get_journal_templates':
+                return await this.getJournalTemplates();
+            
             // Chat tools
             case 'create_chat':
                 return await this.createChat();
@@ -387,6 +495,8 @@ class BackendTools {
                 return await this.updateChatName(params.id, params.name);
             case 'delete_chat':
                 return await this.deleteChat(params.id);
+            case 'search_chat_history':
+                return await this.searchChatHistory(params.keyword, params.limit, params.page, params.dateFrom, params.dateTo);
             
             // RAG Memory tools
             case 'create_memory':
@@ -429,14 +539,22 @@ class BackendTools {
                 'get_journal_versions',
                 'set_journal_version',
                 'rename_journal',
-                'delete_journal'
+                'delete_journal',
+                'get_multiple_journals',
+                'partial_update_journal',
+                'bulk_update_journals',
+                'analyze_journal_patterns',
+                'get_journals_by_date_range',
+                'create_journal_template',
+                'get_journal_templates'
             ],
             chat_tools: [
                 'create_chat',
                 'get_chat',
                 'get_chat_history', 
                 'update_chat_name',
-                'delete_chat'
+                'delete_chat',
+                'search_chat_history'
             ],
             memory_tools: [
                 'create_memory',
@@ -469,12 +587,22 @@ class BackendTools {
             rename_journal: "Rename a journal. Params: {id: string, name: string}",
             delete_journal: "Delete a journal. Params: {id: string}",
             
+            // Enhanced Journal tools
+            get_multiple_journals: "Get multiple journals by IDs. Params: {journalIds: string[]}",
+            partial_update_journal: "Update specific text in a journal. Params: {id: string, selectedText: string, newText: string, operation?: 'replace'|'insert_before'|'insert_after'|'append'|'prepend'}",
+            bulk_update_journals: "Update multiple journals at once. Params: {updates: [{id: string, selectedText?: string, newText?: string, operation?: string}]}",
+            analyze_journal_patterns: "Analyze patterns in journals. Params: {journalIds: string[], analysisType?: 'mood'|'themes'|'progress'|'sentiment'}",
+            get_journals_by_date_range: "Get journals within date range. Params: {startDate: string, endDate: string, tags?: string}",
+            create_journal_template: "Create a journal template. Params: {name: string, structure: object, defaultContent?: string}",
+            get_journal_templates: "Get available journal templates. Params: {}",
+            
             // Chat tools
             create_chat: "Create a new chat session. Params: {}",
             get_chat: "Get a specific chat by ID. Params: {id: string}",
             get_chat_history: "Get user's chat history. Params: {limit?: number, page?: number}",
             update_chat_name: "Update chat name. Params: {id: string, name: string}",
             delete_chat: "Delete a chat. Params: {id: string}",
+            search_chat_history: "Search chat history by keyword. Params: {keyword: string, limit?: number, page?: number, dateFrom?: string, dateTo?: string}",
             
             // Memory/RAG tools
             create_memory: "Create a new memory entry. Params: {memoryType: string, title: string, content: string, metadata?: object, tags?: string[]}",
@@ -493,6 +621,154 @@ class BackendTools {
 
 // Global backend tools instance
 let backendTools = null;
+
+// Process structured agent response for backend actions
+function processStructuredResponse(agentResponse) {
+    try {
+        // Look for structured data markers in the response
+        const structuredDataMatch = agentResponse.match(/\<\!--STRUCTURED_DATA_START\--\>([\s\S]*?)\<\!--STRUCTURED_DATA_END\--\>/);
+        
+        if (structuredDataMatch) {
+            const structuredData = JSON.parse(structuredDataMatch[1]);
+            const userResponse = agentResponse.replace(structuredDataMatch[0], '').trim();
+            
+            return {
+                userResponse: userResponse,
+                structuredData: structuredData,
+                hasStructuredData: true
+            };
+        }
+        
+        return {
+            userResponse: agentResponse,
+            structuredData: null,
+            hasStructuredData: false
+        };
+    } catch (error) {
+        console.error('Error processing structured response:', error);
+        return {
+            userResponse: agentResponse,
+            structuredData: null,
+            hasStructuredData: false
+        };
+    }
+}
+
+// Execute backend actions based on structured data
+async function executeBackendActions(structuredData, userContext) {
+    if (!structuredData || !structuredData.actions) {
+        return { success: true, results: [] };
+    }
+    
+    const results = [];
+    
+    for (const action of structuredData.actions) {
+        try {
+            switch (action.type) {
+                case 'journal_update':
+                    if (action.journalId && action.selectedText && action.newText) {
+                        const result = await backendTools.partialUpdateJournal(
+                            action.journalId,
+                            action.selectedText,
+                            action.newText,
+                            action.operation || 'replace'
+                        );
+                        results.push({
+                            action: 'journal_update',
+                            journalId: action.journalId,
+                            success: result.success,
+                            result: result
+                        });
+                    }
+                    break;
+                    
+                case 'bulk_journal_update':
+                    if (action.updates && Array.isArray(action.updates)) {
+                        const result = await backendTools.bulkUpdateJournals(action.updates);
+                        results.push({
+                            action: 'bulk_journal_update',
+                            count: action.updates.length,
+                            success: result.success,
+                            result: result
+                        });
+                    }
+                    break;
+                    
+                case 'journal_analysis':
+                    if (action.journalIds && Array.isArray(action.journalIds)) {
+                        const result = await backendTools.analyzeJournalPatterns(
+                            action.journalIds,
+                            action.analysisType || 'mood'
+                        );
+                        results.push({
+                            action: 'journal_analysis',
+                            journalIds: action.journalIds,
+                            analysisType: action.analysisType,
+                            success: result.success,
+                            result: result
+                        });
+                    }
+                    break;
+                    
+                case 'memory_creation':
+                    if (action.memoryData) {
+                        const result = await backendTools.createMemory(
+                            action.memoryData.memoryType,
+                            action.memoryData.title,
+                            action.memoryData.content,
+                            action.memoryData.metadata || {},
+                            action.memoryData.tags || []
+                        );
+                        results.push({
+                            action: 'memory_creation',
+                            success: result.success,
+                            result: result
+                        });
+                    }
+                    break;
+                    
+                case 'tag_management':
+                    if (action.targetType === 'journal' && action.targetId) {
+                        let result;
+                        if (action.operation === 'add') {
+                            result = await backendTools.addTagsToJournal(action.targetId, action.tags);
+                        } else if (action.operation === 'remove') {
+                            result = await backendTools.removeTagsFromJournal(action.targetId, action.tags);
+                        }
+                        
+                        if (result) {
+                            results.push({
+                                action: 'tag_management',
+                                targetType: action.targetType,
+                                targetId: action.targetId,
+                                operation: action.operation,
+                                tags: action.tags,
+                                success: result.success,
+                                result: result
+                            });
+                        }
+                    }
+                    break;
+                    
+                default:
+                    console.warn(`Unknown action type: ${action.type}`);
+            }
+        } catch (error) {
+            console.error(`Error executing action ${action.type}:`, error);
+            results.push({
+                action: action.type,
+                success: false,
+                error: error.message
+            });
+        }
+    }
+    
+    return {
+        success: true,
+        results: results,
+        executedActions: results.length
+    };
+}
 
 // Agent workflow execution
 async function executeAgentWorkflow(userMessage, res, userContext = null) {
@@ -550,6 +826,20 @@ async function executeAgentWorkflow(userMessage, res, userContext = null) {
                 // Execute the selected agent
                 const agentResponse = await runAgent(selectedAgent, `${agentContext}\n\nTask: ${agentTask}`, userContext);
                 
+                // Extract user response and action results
+                let displayResponse = agentResponse;
+                let actionResults = null;
+                
+                if (typeof agentResponse === 'object' && agentResponse.userResponse) {
+                    displayResponse = agentResponse.userResponse;
+                    actionResults = agentResponse.actionResults;
+                    
+                    // Log action results for internal tracking (not shown to user)
+                    if (actionResults && actionResults.executedActions > 0) {
+                        console.log(`Executed ${actionResults.executedActions} backend actions for ${getAgentDisplayName(selectedAgent)}`);
+                    }
+                }
+                
                 // Step 3: Monitor agent evaluates the response
                 res.write(`data: ${JSON.stringify({ 
                     status: 'monitoring', 
@@ -557,7 +847,7 @@ async function executeAgentWorkflow(userMessage, res, userContext = null) {
                 })}\n\n`);
                 
                 const monitorResponse = await runAgent('monitor', 
-                    `Agent: ${selectedAgent}\nTask: ${agentTask}\nResponse: ${agentResponse}\n\nEvaluate this response and provide satisfaction index (1-10). If satisfaction < 7, provide improvement feedback.`,
+                    `Agent: ${selectedAgent}\nTask: ${agentTask}\nResponse: ${displayResponse}\n\nEvaluate this response and provide satisfaction index (1-10). If satisfaction < 7, provide improvement feedback.`,
                     userContext
                 );
                 
@@ -585,13 +875,23 @@ async function executeAgentWorkflow(userMessage, res, userContext = null) {
                     
                     const improvementFeedback = monitorData?.feedback || 'Please improve the response quality and completeness.';
                     const improvedResponse = await runAgent(selectedAgent, 
-                        `${agentContext}\n\nTask: ${agentTask}\n\nPrevious Response: ${agentResponse}\n\nImprovement Needed: ${improvementFeedback}\n\nPlease provide an improved response.`,
+                        `${agentContext}\n\nTask: ${agentTask}\n\nPrevious Response: ${displayResponse}\n\nImprovement Needed: ${improvementFeedback}\n\nPlease provide an improved response.`,
                         userContext
                     );
                     
+                    // Extract improved response if it's an object
+                    let finalImprovedResponse = improvedResponse;
+                    if (typeof improvedResponse === 'object' && improvedResponse.userResponse) {
+                        finalImprovedResponse = improvedResponse.userResponse;
+                        // Execute any additional actions from the improvement
+                        if (improvedResponse.actionResults && improvedResponse.actionResults.executedActions > 0) {
+                            console.log(`Executed ${improvedResponse.actionResults.executedActions} additional backend actions during improvement`);
+                        }
+                    }
+                    
                     // Send improved response back to supervisor
                     supervisorResponse = await runAgent('supervisor', 
-                        `Previous Plan: ${JSON.stringify(supervisorData)}\n\nAgent: ${selectedAgent}\nCompleted Task: ${agentTask}\nFinal Response: ${improvedResponse}\n\nEvaluate mission completion and decide next steps.`,
+                        `Previous Plan: ${JSON.stringify(supervisorData)}\n\nAgent: ${selectedAgent}\nCompleted Task: ${agentTask}\nFinal Response: ${finalImprovedResponse}\n\nEvaluate mission completion and decide next steps.`,
                         userContext
                     );
                 } else {
@@ -604,7 +904,7 @@ async function executeAgentWorkflow(userMessage, res, userContext = null) {
                     })}\n\n`);
                     
                     supervisorResponse = await runAgent('supervisor', 
-                        `Previous Plan: ${JSON.stringify(supervisorData)}\n\nAgent: ${selectedAgent}\nCompleted Task: ${agentTask}\nResponse: ${agentResponse}\n\nEvaluate mission completion and decide next steps.`,
+                        `Previous Plan: ${JSON.stringify(supervisorData)}\n\nAgent: ${selectedAgent}\nCompleted Task: ${agentTask}\nResponse: ${displayResponse}\n\nEvaluate mission completion and decide next steps.`,
                         userContext
                     );
                 }
@@ -764,7 +1064,34 @@ async function runAgent(agentName, message, userContext = null) {
                     }
                 }
                 
-                // Wrap response in triple backticks for frontend formatting
+                // Process structured response for backend actions
+                const processedResponse = processStructuredResponse(agentResponse);
+                
+                // Execute backend actions if structured data exists
+                if (processedResponse.hasStructuredData && userContext) {
+                    try {
+                        const actionResults = await executeBackendActions(processedResponse.structuredData, userContext);
+                        
+                        // Return both user response and action results for internal processing
+                        return {
+                            userResponse: `\`\`\`\n${processedResponse.userResponse}\n\`\`\``,
+                            actionResults: actionResults,
+                            hasActions: true,
+                            originalResponse: agentResponse
+                        };
+                    } catch (actionError) {
+                        console.error(`Error executing backend actions:`, actionError);
+                        // Return just the user response if actions fail
+                        return {
+                            userResponse: `\`\`\`\n${processedResponse.userResponse}\n\`\`\``,
+                            actionResults: null,
+                            hasActions: false,
+                            originalResponse: agentResponse
+                        };
+                    }
+                }
+                
+                // Return simple response for backward compatibility
                 return `\`\`\`\n${agentResponse}\n\`\`\``;
                 
             } catch (error) {
@@ -926,4 +1253,4 @@ export const queryStream = async (message, res, userContext = null) => {
 };
 
 // Export BackendTools for external use
-export { BackendTools, getAgentDisplayName };
+export { BackendTools, getAgentDisplayName, processStructuredResponse };
