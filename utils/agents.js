@@ -26,48 +26,48 @@ const monitorInstructions = await readFile(join(__dirname, "..", "prompts", "mon
 
 export const supervisor_agent = new Agent({
     name: 'supervisor',
-    instructions: supervisorInstructions,
+    instructions: supervisorInstructions || 'only output what you received and your name',
     model: 'kimi-k2-0711-preview',
 })
 
 export const retrieval_agent = new Agent({
     name: 'retrieval',
-    instructions: retrievalInstructions,
+    instructions: retrievalInstructions || 'only output what you received and your name',
     model: 'kimi-k2-0711-preview',
 })
 
 export const summarization_agent = new Agent({
     name: 'summarization',
-    instructions: summarizationInstructions,
+    instructions: summarizationInstructions || 'only output what you received and your name',
     model: 'kimi-k2-0711-preview',
 })
 
 export const tags_agent = new Agent({
     name: 'tags',
-    instructions: tagsInstructions,
+    instructions: tagsInstructions || 'only output what you received and your name',
     model: 'kimi-k2-0711-preview',
 })
 
 export const enhancement_agent = new Agent({
     name: 'enhancement',
-    instructions: enhancementInstructions,
+    instructions: enhancementInstructions || 'only output what you received and your name',
     model: 'kimi-k2-0711-preview',
 })
 
 export const memory_agent = new Agent({
     name: 'memory',
-    instructions: memoryInstructions,
+    instructions: memoryInstructions || 'only output what you received and your name',
     model: 'kimi-k2-0711-preview',
 })
 
 export const report_agent = new Agent({
     name: 'report',
-    instructions: reportInstructions,
+    instructions: reportInstructions || 'only output what you received and your name',
     model: 'kimi-k2-0711-preview',
 })
 
 export const monitor_agent = new Agent({
     name: 'monitor',
-    instructions: monitorInstructions,
+    instructions: monitorInstructions || 'only output what you received and your name',
     model: 'kimi-k2-0711-preview',
 })
