@@ -1010,7 +1010,9 @@ async function runAgent(agentName, message, userContext = null, cleanForBackend 
             const fallbackPromptPath = join(__dirname, "..", "prompts", `${agentName}.md`);
             try {
                 agentPrompt = await readFile(fallbackPromptPath, "utf-8");
+                console.log(`🔄 Using fallback prompt for ${agentName}: ${fallbackPromptPath}`);
             } catch (fallbackError) {
+                console.error(`⚠️ No prompt file found for ${agentName}, using generic prompt`);
                 agentPrompt = `You are a specialized ${getAgentDisplayName(agentName)} processor. Handle the following request according to your role.`;
             }
         }
