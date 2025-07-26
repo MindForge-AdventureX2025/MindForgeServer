@@ -136,7 +136,8 @@ export const updateChat = async (req, res) => {
     if(history){
       historyMessages += "\n\nHistory Conversation: " + JSON.stringify(history);
     }
-
+    console.log("historyMessages: ", historyMessages);
+    console.log("requestMessages: ", requestMessages);
     const response = await queryStream(historyMessages + requestMessages, res, {
       userId: req.user.userId,
       authToken: req.headers.authorization || null
