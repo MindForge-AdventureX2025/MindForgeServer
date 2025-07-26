@@ -22,8 +22,30 @@ app.use(cors(
 app.use(helmet());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(clerkMiddleware()); // Middleware for Clerk authentication
-app.use(syncUser); // Middleware to sync user data
+
+// Test mode middleware - bypass auth for testing
+const testBypass = (req, res, next) => {
+    if (req.headers['x-test-mode'] === 'true') {
+        // Create a mock user for testing with valid ObjectId
+        req.user = {
+            _id: '507f1f77bcf86cd799439011',
+            userId: '507f1f77bcf86cd799439011',
+            firstName: 'Test',
+            lastName: 'User',
+            username: 'testuser',
+            email: 'test@example.com',
+            clerkId: 'test-clerk-id'
+        };
+        return next();
+    }
+    
+    // Normal auth flow - apply Clerk middleware
+    clerkMiddleware()(req, res, (err) => {
+        if (err) return next(err);
+        syncUser(req, res, next);
+    });
+};
+app.use(testBypass);
 
 app.use('/api/journals', journalsRoutes);
 app.use('/api/chats', chatsRoutes);

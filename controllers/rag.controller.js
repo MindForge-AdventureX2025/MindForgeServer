@@ -86,10 +86,6 @@ export const getUserMemories = async (req, res) => {
             .skip(skip)
             .limit(parseInt(limit));
 
-        if (!memories || memories.length === 0) {
-            return res.status(404).json({ message: "No memories found" });
-        }
-
         const formattedMemories = memories.map(memory => ({
             ...memory.toObject(),
             createdAt: new Date(memory.createdAt).getTime(),
