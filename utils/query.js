@@ -51,10 +51,10 @@ async function executeAgentWorkflow(userMessage, res) {
         const maxIterations = 10; // Prevent infinite loops
         
         // Step 1: Start with supervisor agent
-        res.write(`data: ${JSON.stringify({ 
-            status: 'workflow_started', 
-            message: 'Supervisor agent analyzing request...' 
-        })}\n\n`);
+        // res.write(`data: ${JSON.stringify({ 
+        //     status: 'workflow_started', 
+        //     message: 'Supervisor agent analyzing request...' 
+        // })}\n\n`);
         
         let supervisorResponse = await runAgent('supervisor', currentMessage);
         let supervisorData;
@@ -71,11 +71,11 @@ async function executeAgentWorkflow(userMessage, res) {
         while (!workflowComplete && iterationCount < maxIterations) {
             iterationCount++;
             
-            res.write(`data: ${JSON.stringify({ 
-                status: 'iteration', 
-                count: iterationCount,
-                message: 'Supervisor coordinating agents...' 
-            })}\n\n`);
+            // res.write(`data: ${JSON.stringify({ 
+            //     status: 'iteration', 
+            //     count: iterationCount,
+            //     message: 'Supervisor coordinating agents...' 
+            // })}\n\n`);
             
             // Check if supervisor indicates completion
             if (supervisorData.status === 'complete') {
@@ -89,20 +89,20 @@ async function executeAgentWorkflow(userMessage, res) {
                 const agentTask = supervisorData.task;
                 const agentContext = supervisorData.context || '';
                 
-                res.write(`data: ${JSON.stringify({ 
-                    status: 'agent_selected', 
-                    agent: selectedAgent,
-                    message: `${selectedAgent} agent processing task...` 
-                })}\n\n`);
+                // res.write(`data: ${JSON.stringify({ 
+                //     status: 'agent_selected', 
+                //     agent: selectedAgent,
+                //     message: `${selectedAgent} agent processing task...` 
+                // })}\n\n`);
                 
                 // Execute the selected agent
                 const agentResponse = await runAgent(selectedAgent, `${agentContext}\n\nTask: ${agentTask}`);
                 
                 // Step 3: Monitor agent evaluates the response
-                res.write(`data: ${JSON.stringify({ 
-                    status: 'monitoring', 
-                    message: 'Monitor agent evaluating response quality...' 
-                })}\n\n`);
+                // res.write(`data: ${JSON.stringify({ 
+                //     status: 'monitoring', 
+                //     message: 'Monitor agent evaluating response quality...' 
+                // })}\n\n`);
                 
                 const monitorResponse = await runAgent('monitor', 
                     `Agent: ${selectedAgent}\nTask: ${agentTask}\nResponse: ${agentResponse}\n\nEvaluate this response and provide satisfaction index (1-10). If satisfaction < 7, provide improvement feedback.`
@@ -124,11 +124,11 @@ async function executeAgentWorkflow(userMessage, res) {
                 
                 // If monitor satisfaction is too low, retry with the same agent
                 if (satisfactionScore < 7) {
-                    res.write(`data: ${JSON.stringify({ 
-                        status: 'retry_required', 
-                        satisfaction: satisfactionScore,
-                        message: 'Response quality insufficient, requesting improvement...' 
-                    })}\n\n`);
+                    // res.write(`data: ${JSON.stringify({ 
+                    //     status: 'retry_required', 
+                    //     satisfaction: satisfactionScore,
+                    //     message: 'Response quality insufficient, requesting improvement...' 
+                    // })}\n\n`);
                     
                     const improvementFeedback = monitorData?.feedback || 'Please improve the response quality and completeness.';
                     const improvedResponse = await runAgent(selectedAgent, 
@@ -141,12 +141,12 @@ async function executeAgentWorkflow(userMessage, res) {
                     );
                 } else {
                     // Step 4: Send successful response back to supervisor
-                    res.write(`data: ${JSON.stringify({ 
-                        status: 'agent_completed', 
-                        agent: selectedAgent,
-                        satisfaction: satisfactionScore,
-                        message: 'Agent task completed successfully' 
-                    })}\n\n`);
+                    // res.write(`data: ${JSON.stringify({ 
+                    //     status: 'agent_completed', 
+                    //     agent: selectedAgent,
+                    //     satisfaction: satisfactionScore,
+                    //     message: 'Agent task completed successfully' 
+                    // })}\n\n`);
                     
                     supervisorResponse = await runAgent('supervisor', 
                         `Previous Plan: ${JSON.stringify(supervisorData)}\n\nAgent: ${selectedAgent}\nCompleted Task: ${agentTask}\nResponse: ${agentResponse}\n\nEvaluate mission completion and decide next steps.`
@@ -178,10 +178,10 @@ async function executeAgentWorkflow(userMessage, res) {
         
     } catch (error) {
         console.error("Error in agent workflow:", error);
-        res.write(`data: ${JSON.stringify({ 
-            status: 'error', 
-            message: 'Workflow error occurred, falling back to direct response' 
-        })}\n\n`);
+        // res.write(`data: ${JSON.stringify({ 
+        //     status: 'error', 
+        //     message: 'Workflow error occurred, falling back to direct response' 
+        // })}\n\n`);
         
         // Fallback to direct LLM response
         return await directLLMResponse(userMessage);
@@ -208,7 +208,7 @@ async function runAgent(agentName, message) {
         }
         
         const response = await client.chat.completions.create({
-            model: "kimi-k2-0711-preview",
+            model: process.env.LLM || "kimi-k2-0711-preview",
             messages: [
                 {
                     role: "system",
@@ -233,7 +233,7 @@ async function runAgent(agentName, message) {
 // Direct LLM response for fallback
 async function directLLMResponse(message) {
     const response = await client.chat.completions.create({
-        model: "kimi-k2-0711-preview",
+        model: process.env.LLM || "kimi-k2-0711-preview",
         messages: [
             {
                 role: "system",
@@ -253,7 +253,7 @@ async function directLLMResponse(message) {
 export const query = async (message) => {
     try {
         const response = await client.chat.completions.create({
-            model: "kimi-k2-0711-preview",
+            model: process.env.LLM || "kimi-k2-0711-preview",
             messages: [
                 {
                     role: "system",
@@ -286,7 +286,7 @@ export const queryStream = async (message, res) => {
         // })}\n\n`);
         
         const stream = await client.chat.completions.create({
-            model: "kimi-k2-0711-preview",
+            model: process.env.LLM || "kimi-k2-0711-preview",
             messages: [
                 {
                     role: "system",
